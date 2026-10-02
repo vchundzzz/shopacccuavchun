@@ -30,37 +30,82 @@ export default function AdminSettings({ shopConfig, onUpdateShopConfig, showToas
     workingHours: shopConfig?.workingHours || '24/7',
     popupAnnouncement: {
       enabled: shopConfig?.popupAnnouncement?.enabled ?? true,
+      headerTitle: shopConfig?.popupAnnouncement?.headerTitle || 'Thông Báo Mới',
       title: shopConfig?.popupAnnouncement?.title || 'SHOWROOM SHOW ACC',
       subtitle: shopConfig?.popupAnnouncement?.subtitle || 'ZALO HỖ TRỢ MỌI VẤN ĐỀ',
-      ffZalo: shopConfig?.popupAnnouncement?.ffZalo || '0868994712',
-      fcmZalo: shopConfig?.popupAnnouncement?.fcmZalo || '0963566724',
-      lqZalo: shopConfig?.popupAnnouncement?.lqZalo || '0977296049',
-      note: shopConfig?.popupAnnouncement?.note || 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN TY KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!',
-      footerAlert: shopConfig?.popupAnnouncement?.footerAlert || 'THUÊ ACC FF VUI LÒNG NHẮN ZALO'
+      ffZalo: shopConfig?.popupAnnouncement?.ffZalo || shopConfig?.zaloFF || '0868994712',
+      fcmZalo: shopConfig?.popupAnnouncement?.fcmZalo || shopConfig?.zaloFCM || '0963566724',
+      lqZalo: shopConfig?.popupAnnouncement?.lqZalo || shopConfig?.zaloLQ || '0977296049',
+      note: shopConfig?.popupAnnouncement?.note || 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN VCHUN KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!',
+      footerAlert: shopConfig?.popupAnnouncement?.footerAlert || 'THUÊ ACC FF VUI LÒNG NHẮN ZALO',
+      buttonText: shopConfig?.popupAnnouncement?.buttonText || 'Tôi Đã Hiểu'
     }
   });
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'zaloFF') {
+        const clean = value.replace(/\s+/g, '');
+        next.supportCards = (prev.supportCards || []).map(c => 
+          (c.id === 'sp-ff' || c.id === 'sp-rent') ? { ...c, link: `https://zalo.me/${clean}` } : c
+        );
+        next.gameHeaders = {
+          ...prev.gameHeaders,
+          freefire: {
+            ...prev.gameHeaders?.freefire,
+            supportLink: `https://zalo.me/${clean}`
+          }
+        };
+        next.popupAnnouncement = {
+          ...prev.popupAnnouncement,
+          ffZalo: value
+        };
+      }
+      if (field === 'zaloLQ') {
+        const clean = value.replace(/\s+/g, '');
+        next.supportCards = (prev.supportCards || []).map(c => 
+          c.id === 'sp-lq' ? { ...c, link: `https://zalo.me/${clean}` } : c
+        );
+        next.gameHeaders = {
+          ...prev.gameHeaders,
+          lienquan: {
+            ...prev.gameHeaders?.lienquan,
+            supportLink: `https://zalo.me/${clean}`
+          }
+        };
+        next.popupAnnouncement = {
+          ...prev.popupAnnouncement,
+          lqZalo: value
+        };
+      }
+      return next;
+    });
   };
 
   const handlePopupChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      popupAnnouncement: {
-        ...prev.popupAnnouncement,
-        [field]: value
+    setFormData(prev => {
+      const next = {
+        ...prev,
+        popupAnnouncement: {
+          ...prev.popupAnnouncement,
+          [field]: value
+        }
+      };
+      if (field === 'ffZalo') {
+        next.zaloFF = value;
       }
-    }));
+      if (field === 'lqZalo') {
+        next.zaloLQ = value;
+      }
+      return next;
+    });
   };
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     onUpdateShopConfig(formData);
-    showToast('Đã lưu cấu hình thành công! Dữ liệu đã được cập nhật sang trang cửa hàng.');
+    showToast('Đã lưu cấu hình thành công! Dữ liệu đã được lưu vĩnh viễn vào hệ thống.');
   };
 
   const handleSaveAndExit = (e) => {
@@ -312,14 +357,25 @@ export default function AdminSettings({ shopConfig, onUpdateShopConfig, showToas
             </label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+            <div className="form-group">
+              <label>Dòng tiêu đề nhỏ (Thông báo mới):</label>
+              <input 
+                type="text" 
+                value={formData.popupAnnouncement?.headerTitle || ''}
+                onChange={(e) => handlePopupChange('headerTitle', e.target.value)}
+                className="admin-input"
+                placeholder="Thông Báo Mới"
+              />
+            </div>
+
             <div className="form-group">
               <label>Tiêu đề Popup chính:</label>
               <input 
                 type="text" 
                 value={formData.popupAnnouncement?.title || ''}
                 onChange={(e) => handlePopupChange('title', e.target.value)}
-                className="admin-input"
+                className="admin-input font-bold"
                 placeholder="SHOWROOM SHOW ACC"
               />
             </div>
@@ -330,8 +386,32 @@ export default function AdminSettings({ shopConfig, onUpdateShopConfig, showToas
                 type="text" 
                 value={formData.popupAnnouncement?.subtitle || ''}
                 onChange={(e) => handlePopupChange('subtitle', e.target.value)}
-                className="admin-input"
+                className="admin-input text-blue"
                 placeholder="ZALO HỖ TRỢ MỌI VẤN ĐỀ"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+            <div className="form-group">
+              <label>Số Zalo Free Fire (Zalo FF):</label>
+              <input 
+                type="text" 
+                value={formData.popupAnnouncement?.ffZalo || ''}
+                onChange={(e) => handlePopupChange('ffZalo', e.target.value)}
+                className="admin-input"
+                placeholder="0868994712"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Số Zalo Liên Quân (Zalo LQ):</label>
+              <input 
+                type="text" 
+                value={formData.popupAnnouncement?.lqZalo || ''}
+                onChange={(e) => handlePopupChange('lqZalo', e.target.value)}
+                className="admin-input"
+                placeholder="0977296049"
               />
             </div>
           </div>
@@ -343,19 +423,32 @@ export default function AdminSettings({ shopConfig, onUpdateShopConfig, showToas
               value={formData.popupAnnouncement?.note || ''}
               onChange={(e) => handlePopupChange('note', e.target.value)}
               className="admin-input"
-              placeholder="LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO..."
+              placeholder="LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN VCHUN KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!"
             />
           </div>
 
-          <div className="form-group mt-3">
-            <label>Dòng thông báo cuối popup:</label>
-            <input 
-              type="text" 
-              value={formData.popupAnnouncement?.footerAlert || ''}
-              onChange={(e) => handlePopupChange('footerAlert', e.target.value)}
-              className="admin-input"
-              placeholder="THUÊ ACC FF VUI LÒNG NHẮN ZALO"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+            <div className="form-group">
+              <label>Dòng thông báo cuối popup (chữ đỏ gạch chân):</label>
+              <input 
+                type="text" 
+                value={formData.popupAnnouncement?.footerAlert || ''}
+                onChange={(e) => handlePopupChange('footerAlert', e.target.value)}
+                className="admin-input text-red-500 font-bold"
+                placeholder="THUÊ ACC FF VUI LÒNG NHẮN ZALO"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Chữ trên nút xác nhận đóng:</label>
+              <input 
+                type="text" 
+                value={formData.popupAnnouncement?.buttonText || ''}
+                onChange={(e) => handlePopupChange('buttonText', e.target.value)}
+                className="admin-input font-bold"
+                placeholder="Tôi Đã Hiểu"
+              />
+            </div>
           </div>
 
           <div className="card-quick-save-bar flex justify-end gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">

@@ -1,16 +1,16 @@
 // Dữ liệu mẫu chuẩn 99% cho SHOPTYSEISEI.NET
 
 export const DEFAULT_SHOP_CONFIG = {
-  shopName: 'SHOPVANCHUNG',
+  shopName: 'VANCHUNG.CLICK',
   siteTitle: 'SHOWROOM CHO THUÊ ACC GAME',
   tagline: 'SHOWROOM CHO THUÊ ACC GAME UY TÍN HÀNG ĐẦU',
   blackLogo: '/images/logo-shopvanchung.png',
   whiteLogo: '/images/logo-shopvanchung.png',
   avatar: '/images/logo-shopvanchung.png',
-  hotline: '0868994712',
-  zaloFF: '0868994712',
+  hotline: '0362481351',
+  zaloFF: '0362481351',
   zaloFCM: '0963566724',
-  zaloLQ: '0977296049',
+  zaloLQ: '0362481351',
   facebookLink: 'https://www.facebook.com/tyseiseiff/',
   workingHours: '24/7',
   
@@ -23,7 +23,7 @@ export const DEFAULT_SHOP_CONFIG = {
       id: 'sp-ff',
       title: 'Support Free Fire',
       image: 'https://shoptyseisei.net/uploads/03-09-2026/dc83a6e4-0b77-40f2-8cd1-47c8a2eb407c.jpg',
-      link: 'https://zalo.me/0868994712',
+      link: 'https://zalo.me/0362481351',
       badge: 'Zalo FF'
     },
     {
@@ -37,14 +37,14 @@ export const DEFAULT_SHOP_CONFIG = {
       id: 'sp-rent',
       title: 'Thuê acc Free Fire & LQ qua Zalo',
       image: 'https://pub-49db8d8cc54b4abc84b979c54f4fdd5b.r2.dev/items/2026/07/07/img_6a4c82265ec8e_1783398950.png',
-      link: 'https://zalo.me/0868994712',
+      link: 'https://zalo.me/0362481351',
       badge: 'Thuê Acc'
     },
     {
       id: 'sp-lq',
       title: 'Thu acc và support Liên Quân',
       image: 'https://shoptyseisei.net/uploads/03-09-2026/2ec58ca4-af38-42d3-9cb4-087b08ac7271.jpg',
-      link: 'https://zalo.me/0977296049',
+      link: 'https://zalo.me/0362481351',
       badge: 'Zalo LQ'
     }
   ],
@@ -55,27 +55,33 @@ export const DEFAULT_SHOP_CONFIG = {
       title: 'ACC FREE FIRE VIP PRO',
       banner: 'https://pub-49db8d8cc54b4abc84b979c54f4fdd5b.r2.dev/items/2026/07/07/img_6a4c82265ec8e_1783398950.png',
       supportBanner: 'https://shoptyseisei.net/uploads/03-09-2026/dc83a6e4-0b77-40f2-8cd1-47c8a2eb407c.jpg',
-      supportLink: 'https://zalo.me/0868994712'
+      supportLink: 'https://zalo.me/0362481351'
     },
 
     lienquan: {
       title: 'Acc Liên Quân Rẻ Chất',
       banner: 'https://pub-49db8d8cc54b4abc84b979c54f4fdd5b.r2.dev/items/2026/05/07/img_69fc221b2eacc_1778131483.png',
       supportBanner: 'https://shoptyseisei.net/uploads/03-09-2026/2ec58ca4-af38-42d3-9cb4-087b08ac7271.jpg',
-      supportLink: 'https://zalo.me/0977296049'
+      supportLink: 'https://zalo.me/0362481351'
     }
   },
 
   // Thông báo Popup mở lên khi vào web
   popupAnnouncement: {
     enabled: true,
+    headerTitle: 'Thông Báo Mới',
     title: 'SHOWROOM SHOW ACC',
     subtitle: 'ZALO HỖ TRỢ MỌI VẤN ĐỀ',
-    ffZalo: '0868994712',
+    ffLabel: 'ZALO FF:',
+    ffZalo: '0362481351',
+    lqLabel: 'ZALO LQ:',
+    lqZalo: '0362481351',
+    fcmLabel: 'ZALO FC:',
     fcmZalo: '0963566724',
-    lqZalo: '0977296049',
-    note: 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN TY KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!',
-    footerAlert: 'THUÊ ACC FF VUI LÒNG NHẮN ZALO'
+    showFcmZalo: false,
+    note: 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN VCHUN KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!',
+    footerAlert: 'THUÊ ACC FF VUI LÒNG NHẮN ZALO',
+    buttonText: 'Tôi Đã Hiểu'
   },
 
   // Thông báo lưu ý ở đầu trang danh mục showroom (chuẩn shoptyseisei)
@@ -159,7 +165,7 @@ export const INITIAL_BANNERS = [
     subtitle: 'ZALO HỖ TRỢ MỌI VẤN ĐỀ - BẢO HÀNH VĨNH VIỄN',
     tag: 'BANNER CHÍNH',
     buttonText: 'LIÊN HỆ ZALO NGAY',
-    link: 'https://zalo.me/0868994712',
+    link: 'https://zalo.me/0362481351',
     badge: 'HOT',
     image: 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg',
     active: true,

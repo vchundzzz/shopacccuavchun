@@ -18,22 +18,32 @@ export default function HomeBanners({ shopConfig, onSelectGame }) {
 
         {/* 4 Quick Support Cards Grid */}
         <div className="support-cards-grid mt-3">
-          {supportCards.map((card) => (
-            <a 
-              key={card.id}
-              href={card.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="support-card-item"
-              title={card.title}
-            >
-              <img 
-                src={card.image} 
-                alt={card.title} 
-                className="support-card-img"
-              />
-            </a>
-          ))}
+          {supportCards.map((card) => {
+            let directLink = card.link;
+            if (card.id === 'sp-ff' || card.id === 'sp-rent') {
+              const ffNum = (shopConfig.zaloFF || '0868994712').replace(/\s+/g, '');
+              directLink = `https://zalo.me/${ffNum}`;
+            } else if (card.id === 'sp-lq') {
+              const lqNum = (shopConfig.zaloLQ || '0977296049').replace(/\s+/g, '');
+              directLink = `https://zalo.me/${lqNum}`;
+            }
+            return (
+              <a 
+                key={card.id}
+                href={directLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="support-card-item"
+                title={card.title}
+              >
+                <img 
+                  src={card.image} 
+                  alt={card.title} 
+                  className="support-card-img"
+                />
+              </a>
+            );
+          })}
         </div>
       </div>
 

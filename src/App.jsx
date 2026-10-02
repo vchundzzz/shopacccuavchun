@@ -72,6 +72,18 @@ export default function App() {
     }
   }, [isGrayscale]);
 
+  // Load latest data from Cloud Database on startup (if connected)
+  useEffect(() => {
+    storage.fetchFromCloud().then(cloudData => {
+      if (cloudData) {
+        if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
+        if (Array.isArray(cloudData.accounts)) setAccounts(cloudData.accounts);
+        if (Array.isArray(cloudData.banners)) setBanners(cloudData.banners);
+        if (Array.isArray(cloudData.categories)) setCategories(cloudData.categories);
+      }
+    });
+  }, []);
+
   // Listen to hash change (e.g. when typing #admin or navigating to #/tai-khoan/:id)
   useEffect(() => {
     const handleHashChange = () => {

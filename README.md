@@ -10,6 +10,8 @@ Website thương mại điện tử chuyên nghiệp phục vụ bán và cho th
   - Quản lý danh sách tài khoản (thêm mới, sửa giá, đổi trạng thái, tải ảnh).
   - Tải và thay đổi trực tiếp ảnh danh mục Free Fire / Liên Quân ngay trên giao diện web.
   - Quản lý Banner và thông tin liên hệ.
+  - **Quản lý Thông Báo Popup (Mới):** Tùy chỉnh chi tiết popup SweetAlert với Live Preview thời gian thực (sửa tiêu đề, Zalo FF, Zalo LQ, lưu ý quay video khi mua acc, bật/tắt popup tự động).
+  - **Cơ Sở Dữ Liệu Đám Mây (Cloud Database):** Tích hợp Google Firebase Realtime Database tự động đồng bộ thời gian thực, cho phép quản lý bán acc từ điện thoại/máy tính trên tên miền thật cho mọi khách hàng xem ngay lập tức.
 - **Hiệu Ứng Bong Bóng Chân Thực:** Hiệu ứng bong bóng 3D bay bổng sống động trên nền giao diện.
 
 ## 🛠️ Công nghệ sử dụng

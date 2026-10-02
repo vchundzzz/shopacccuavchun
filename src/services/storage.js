@@ -1,4 +1,6 @@
 import { DEFAULT_SHOP_CONFIG, INITIAL_ACCOUNTS, INITIAL_BANNERS, INITIAL_CATEGORIES } from '../data/seedData';
+import dbData from '../data/db.json';
+import { cloudDatabase } from './cloudDatabase';
 
 const STORAGE_KEYS = {
   SHOP_CONFIG: 'shoptyseisei_config_v2',
@@ -14,7 +16,94 @@ const DEFAULT_ADMIN = {
   password: 'admin123'
 };
 
+const baseShopConfig = dbData?.shopConfig || DEFAULT_SHOP_CONFIG;
+const baseAccounts = dbData?.accounts || INITIAL_ACCOUNTS;
+const baseBanners = dbData?.banners || INITIAL_BANNERS;
+const baseCategories = dbData?.categories || INITIAL_CATEGORIES;
+
 export const storage = {
+  // Sync all current data to server disk (src/data/db.json) AND Cloud Database
+  async persistDataToDisk() {
+    const payload = {
+      shopConfig: this.getShopConfig(),
+      accounts: this.getAccounts(),
+      banners: this.getBanners(),
+      categories: this.getCategories()
+    };
+
+    let diskResult = { success: false };
+    let cloudResult = { success: false };
+
+    // 1. Save to local disk via Vite dev server middleware (if local)
+    try {
+      const res = await fetch('/api/save-shop-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      diskResult = await res.json();
+    } catch (e) {
+      // Offline / static build
+    }
+
+    // 2. Save to Cloud Database (Firebase) if URL is configured
+    const cloudUrl = cloudDatabase.getCloudUrl(payload.shopConfig);
+    if (cloudUrl) {
+      cloudResult = await cloudDatabase.saveShopData(cloudUrl, payload);
+    }
+
+    return {
+      success: diskResult.success || cloudResult.success,
+      disk: diskResult,
+      cloud: cloudResult
+    };
+  },
+
+  // Fetch the latest data from Cloud Database on page load
+  async fetchFromCloud() {
+    const currentConfig = this.getShopConfig();
+    const cloudUrl = cloudDatabase.getCloudUrl(currentConfig);
+    if (!cloudUrl) return null;
+
+    const cloudData = await cloudDatabase.fetchShopData(cloudUrl);
+    if (cloudData && typeof cloudData === 'object') {
+      // Cache cloud data into localStorage so next visit is instant
+      if (cloudData.shopConfig) {
+        localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(cloudData.shopConfig));
+      }
+      if (Array.isArray(cloudData.accounts)) {
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cloudData.accounts));
+      }
+      if (Array.isArray(cloudData.banners)) {
+        localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(cloudData.banners));
+      }
+      if (Array.isArray(cloudData.categories)) {
+        localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cloudData.categories));
+      }
+      return cloudData;
+    }
+    return null;
+  },
+
+  // Manually push all current data to a specific Cloud Database URL
+  async syncAllToCloud(targetUrl) {
+    const cleanUrl = cloudDatabase.setCloudUrl(targetUrl);
+    const updatedConfig = {
+      ...this.getShopConfig(),
+      cloudDbUrl: cleanUrl
+    };
+    this.saveShopConfig(updatedConfig);
+
+    const payload = {
+      shopConfig: updatedConfig,
+      accounts: this.getAccounts(),
+      banners: this.getBanners(),
+      categories: this.getCategories()
+    };
+
+    return await cloudDatabase.saveShopData(cleanUrl, payload);
+  },
+
   // --- SHOP CONFIG (BRANDING, LOGO, AVATAR, BANNERS, POPUP, HOTLINES) ---
   getShopConfig() {
     try {
@@ -24,22 +113,22 @@ export const storage = {
         let updated = false;
         // Migrate old shoptyseisei logos and branding to SHOPVANCHUNG
         if (!parsed.blackLogo || parsed.blackLogo.includes('shoptyseisei.net/uploads')) {
-          parsed.blackLogo = DEFAULT_SHOP_CONFIG.blackLogo;
+          parsed.blackLogo = baseShopConfig.blackLogo;
           updated = true;
         }
         if (!parsed.whiteLogo || parsed.whiteLogo.includes('shoptyseisei.net/uploads')) {
-          parsed.whiteLogo = DEFAULT_SHOP_CONFIG.whiteLogo;
+          parsed.whiteLogo = baseShopConfig.whiteLogo;
           updated = true;
         }
         if (!parsed.avatar || parsed.avatar.includes('shoptyseisei.net/uploads')) {
-          parsed.avatar = DEFAULT_SHOP_CONFIG.avatar;
+          parsed.avatar = baseShopConfig.avatar;
           updated = true;
         }
         if (!parsed.shopName || parsed.shopName === 'SHOPTYSEISEI.NET') {
           parsed.shopName = 'SHOPVANCHUNG';
           updated = true;
         }
-        const merged = { ...DEFAULT_SHOP_CONFIG, ...parsed };
+        const merged = { ...baseShopConfig, ...parsed };
         if (updated) {
           this.saveShopConfig(merged);
         }
@@ -48,13 +137,14 @@ export const storage = {
     } catch (e) {
       console.error('Error reading shop config from localStorage', e);
     }
-    this.saveShopConfig(DEFAULT_SHOP_CONFIG);
-    return DEFAULT_SHOP_CONFIG;
+    this.saveShopConfig(baseShopConfig);
+    return baseShopConfig;
   },
 
   saveShopConfig(config) {
     try {
       localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(config));
+      this.persistDataToDisk();
     } catch (e) {
       console.error('Error saving shop config to localStorage', e);
     }
@@ -74,10 +164,9 @@ export const storage = {
       if (data) {
         const parsed = JSON.parse(data);
         const filtered = parsed.filter(a => a.game !== 'fcmobile');
-        // Ensure MS 87898 and the new accounts are present
         const has87898 = filtered.some(a => a.id === '87898' || a.code === '87898');
         if (!has87898) {
-          const freshAccounts = INITIAL_ACCOUNTS.filter(a => a.game !== 'fcmobile');
+          const freshAccounts = baseAccounts.filter(a => a.game !== 'fcmobile');
           const merged = [...freshAccounts.slice(0, 6), ...filtered];
           this.saveAccounts(merged);
           return merged;
@@ -87,7 +176,7 @@ export const storage = {
     } catch (e) {
       console.error('Error reading accounts from localStorage', e);
     }
-    const cleanInitial = INITIAL_ACCOUNTS.filter(a => a.game !== 'fcmobile');
+    const cleanInitial = baseAccounts.filter(a => a.game !== 'fcmobile');
     this.saveAccounts(cleanInitial);
     return cleanInitial;
   },
@@ -95,6 +184,7 @@ export const storage = {
   saveAccounts(accounts) {
     try {
       localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+      this.persistDataToDisk();
     } catch (e) {
       console.error('Error saving accounts to localStorage', e);
     }
@@ -138,31 +228,6 @@ export const storage = {
     return updated;
   },
 
-  toggleAccountSold(id) {
-    const accounts = this.getAccounts();
-    const updated = accounts.map(acc => {
-      if (acc.id === id || acc.code === id) {
-        const nextStatus = acc.status === 'sold' ? 'available' : 'sold';
-        return { ...acc, status: nextStatus };
-      }
-      return acc;
-    });
-    this.saveAccounts(updated);
-    return updated;
-  },
-
-  toggleAccountHidden(id) {
-    const accounts = this.getAccounts();
-    const updated = accounts.map(acc => {
-      if (acc.id === id || acc.code === id) {
-        return { ...acc, hidden: !acc.hidden };
-      }
-      return acc;
-    });
-    this.saveAccounts(updated);
-    return updated;
-  },
-
   // --- BANNERS ---
   getBanners() {
     try {
@@ -173,13 +238,14 @@ export const storage = {
     } catch (e) {
       console.error('Error reading banners', e);
     }
-    this.saveBanners(INITIAL_BANNERS);
-    return INITIAL_BANNERS;
+    this.saveBanners(baseBanners);
+    return baseBanners;
   },
 
   saveBanners(banners) {
     try {
       localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(banners));
+      this.persistDataToDisk();
     } catch (e) {
       console.error('Error saving banners', e);
     }
@@ -223,7 +289,7 @@ export const storage = {
     } catch (e) {
       console.error('Error reading categories', e);
     }
-    const cleanCats = INITIAL_CATEGORIES.filter(c => c.game !== 'fcmobile');
+    const cleanCats = baseCategories.filter(c => c.game !== 'fcmobile');
     this.saveCategories(cleanCats);
     return cleanCats;
   },
@@ -231,6 +297,7 @@ export const storage = {
   saveCategories(categories) {
     try {
       localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+      this.persistDataToDisk();
     } catch (e) {
       console.error('Error saving categories', e);
     }
@@ -318,3 +385,10 @@ export const storage = {
     };
   }
 };
+
+// Initial background sync to disk if in browser
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    storage.persistDataToDisk();
+  }, 1000);
+}

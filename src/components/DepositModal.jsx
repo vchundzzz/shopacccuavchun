@@ -88,8 +88,8 @@ export default function DepositModal({ shopConfig = {}, isOpen, onClose }) {
                 <div className="banking-row">
                   <span className="b-label">Số Tài Khoản:</span>
                   <div className="copy-val-wrap">
-                    <span className="b-value highlight font-mono">0868994712</span>
-                    <button className="btn-copy-sm" onClick={() => handleCopy('0868994712', 'stk')}>
+                    <span className="b-value highlight font-mono">{shopConfig.hotline || shopConfig.zaloFF || '0868994712'}</span>
+                    <button className="btn-copy-sm" onClick={() => handleCopy(shopConfig.hotline || shopConfig.zaloFF || '0868994712', 'stk')}>
                       {copiedField === 'stk' ? <Check size={14} className="text-green" /> : <Copy size={14} />}
                       <span>{copiedField === 'stk' ? 'Đã sao chép' : 'Copy'}</span>
                     </button>
@@ -98,14 +98,14 @@ export default function DepositModal({ shopConfig = {}, isOpen, onClose }) {
 
                 <div className="banking-row">
                   <span className="b-label">Chủ Tài Khoản:</span>
-                  <span className="b-value font-bold">SHOP TY SEI SEI</span>
+                  <span className="b-value font-bold">{shopConfig.shopName || 'SHOPVANCHUNG'}</span>
                 </div>
 
                 <div className="banking-row">
                   <span className="b-label">Nội Dung CK:</span>
                   <div className="copy-val-wrap">
-                    <span className="b-value highlight font-mono">NAPTIEN SHOPTY</span>
-                    <button className="btn-copy-sm" onClick={() => handleCopy('NAPTIEN SHOPTY', 'nd')}>
+                    <span className="b-value highlight font-mono">NAPTIEN {(shopConfig.shopName || 'SHOPVANCHUNG').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}</span>
+                    <button className="btn-copy-sm" onClick={() => handleCopy(`NAPTIEN ${(shopConfig.shopName || 'SHOPVANCHUNG').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}`, 'nd')}>
                       {copiedField === 'nd' ? <Check size={14} className="text-green" /> : <Copy size={14} />}
                       <span>{copiedField === 'nd' ? 'Đã sao chép' : 'Copy'}</span>
                     </button>

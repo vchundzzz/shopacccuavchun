@@ -13,13 +13,18 @@ import {
   KeyRound,
   Lock,
   X,
-  ExternalLink
+  ExternalLink,
+  Bell,
+  Save,
+  Cloud
 } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import AdminAccounts from './AdminAccounts';
 import AdminBanners from './AdminBanners';
 import AdminCategories from './AdminCategories';
 import AdminSettings from './AdminSettings';
+import AdminAnnouncement from './AdminAnnouncement';
+import AdminCloudDB from './AdminCloudDB';
 import { storage } from '../services/storage';
 import { Settings as SettingsIcon } from 'lucide-react';
 import './AdminLayout.css';
@@ -65,6 +70,19 @@ export default function AdminLayout({
     if (window.confirm('Bạn có chắc muốn khôi phục toàn bộ dữ liệu mẫu ban đầu? Toàn bộ thay đổi thêm/sửa/xóa sẽ được đặt lại.')) {
       onResetData();
       showToast('Đã khôi phục dữ liệu mẫu thành công!');
+    }
+  };
+
+  const handleSaveToDisk = async () => {
+    try {
+      const res = await storage.persistDataToDisk();
+      if (res && res.success) {
+        showToast('✅ Đã lưu toàn bộ Zalo & cấu hình vào file mã nguồn (src/data/db.json)! Giờ bạn có thể gửi thư mục code cho bạn bè.');
+      } else {
+        showToast('Đã lưu dữ liệu vào hệ thống!');
+      }
+    } catch (e) {
+      showToast('Đã lưu dữ liệu vào hệ thống!');
     }
   };
 
@@ -133,11 +151,29 @@ export default function AdminLayout({
           </button>
 
           <button 
+            className={`admin-nav-item ${activeAdminTab === 'announcement' ? 'active' : ''}`}
+            onClick={() => setActiveAdminTab('announcement')}
+          >
+            <Bell size={18} />
+            <span>Quản Lý Thông Báo</span>
+            <span className="nav-badge" style={{ background: '#ef4444', color: '#fff' }}>POPUP</span>
+          </button>
+
+          <button 
             className={`admin-nav-item ${activeAdminTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveAdminTab('settings')}
           >
             <SettingsIcon size={18} />
-            <span>Cấu Hình Shop & Popup</span>
+            <span>Cấu Hình Shop & Logo</span>
+          </button>
+
+          <button 
+            className={`admin-nav-item ${activeAdminTab === 'cloud' ? 'active' : ''}`}
+            onClick={() => setActiveAdminTab('cloud')}
+          >
+            <Cloud size={18} />
+            <span>Database Đám Mây</span>
+            <span className="nav-badge" style={{ background: '#06b6d4', color: '#fff' }}>ONLINE</span>
           </button>
         </nav>
 
@@ -166,11 +202,22 @@ export default function AdminLayout({
               {activeAdminTab === 'accounts' && 'Quản Lý Kho Tài Khoản Game'}
               {activeAdminTab === 'banners' && 'Quản Lý Banner Quảng Cáo Toàn Trang'}
               {activeAdminTab === 'categories' && 'Quản Lý Danh Mục & Khoảng Giá'}
-              {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Popup'}
+              {activeAdminTab === 'announcement' && 'Quản Lý Thông Báo Popup Trang Chủ'}
+              {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Logo'}
+              {activeAdminTab === 'cloud' && 'Cấu Hình Cơ Sở Dữ Liệu Đám Mây (Cloud Database)'}
             </strong>
           </div>
 
           <div className="admin-header-actions">
+            <button 
+              className="btn-gaming-primary btn-sm" 
+              onClick={handleSaveToDisk} 
+              title="Lưu tất cả dữ liệu (Zalo, acc, banner, popup) trực tiếp vào file mã nguồn để khi gửi code cho bạn bè họ sẽ thấy đầy đủ thông tin mới nhất"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)', borderColor: '#10b981' }}
+            >
+              <Save size={14} />
+              <span>Lưu Ra File Cho Bạn Bè</span>
+            </button>
             <button className="btn-gaming-success btn-sm" onClick={onExitAdmin} title="Mở trang chủ shop để xem các thay đổi">
               <ExternalLink size={14} />
               <span>Xem Website Shop</span>
@@ -228,12 +275,29 @@ export default function AdminLayout({
             />
           )}
 
+          {activeAdminTab === 'announcement' && (
+            <AdminAnnouncement 
+              shopConfig={shopConfig} 
+              onUpdateShopConfig={onUpdateShopConfig}
+              showToast={showToast}
+              onExitAdmin={onExitAdmin}
+            />
+          )}
+
           {activeAdminTab === 'settings' && (
             <AdminSettings 
               shopConfig={shopConfig} 
               onUpdateShopConfig={onUpdateShopConfig}
               showToast={showToast}
               onExitAdmin={onExitAdmin}
+            />
+          )}
+
+          {activeAdminTab === 'cloud' && (
+            <AdminCloudDB 
+              shopConfig={shopConfig} 
+              onUpdateShopConfig={onUpdateShopConfig}
+              showToast={showToast}
             />
           )}
         </div>

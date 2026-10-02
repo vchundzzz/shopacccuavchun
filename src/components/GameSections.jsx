@@ -76,7 +76,7 @@ export default function GameSections({
           />
 
           <a 
-            href={gameHeaders.freefire?.supportLink || `https://zalo.me/${shopConfig.zaloFF}`} 
+            href={`https://zalo.me/${(shopConfig.zaloFF || '0868994712').replace(/\s+/g, '')}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="game-support-link-btn"
@@ -105,7 +105,7 @@ export default function GameSections({
           />
 
           <a 
-            href={gameHeaders.lienquan?.supportLink || `https://zalo.me/${shopConfig.zaloLQ}`} 
+            href={`https://zalo.me/${(shopConfig.zaloLQ || '0977296049').replace(/\s+/g, '')}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="game-support-link-btn"

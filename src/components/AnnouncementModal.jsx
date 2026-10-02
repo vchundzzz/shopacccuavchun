@@ -6,17 +6,20 @@ export default function AnnouncementModal({ shopConfig, isOpen, onClose }) {
   if (!isOpen) return null;
 
   const announcement = shopConfig.popupAnnouncement || {};
+  const ffZalo = announcement.ffZalo || shopConfig.zaloFF || '0868994712';
+  const lqZalo = announcement.lqZalo || shopConfig.zaloLQ || '0977296049';
+  const fcmZalo = announcement.fcmZalo || shopConfig.zaloFCM || '0963566724';
 
   return (
     <div className="swal-overlay" onClick={onClose}>
       <div className="swal-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="swal-close-btn" onClick={onClose}>
+        <button className="swal-close-btn" onClick={onClose} aria-label="Đóng thông báo">
           <X size={20} />
         </button>
 
         <div className="swal-header">
           <Bell size={22} className="text-primary bell-anim" />
-          <h3 className="swal-title">Thông Báo Mới</h3>
+          <h3 className="swal-title">{announcement.headerTitle || 'Thông Báo Mới'}</h3>
           <Bell size={22} className="text-primary bell-anim" />
         </div>
 
@@ -31,27 +34,40 @@ export default function AnnouncementModal({ shopConfig, isOpen, onClose }) {
 
           <div className="swal-contact-box">
             <div className="swal-contact-line">
-              <span className="contact-label">ZALO FF:</span>
+              <span className="contact-label">{announcement.ffLabel || 'ZALO FF:'}</span>
               <a 
-                href={`https://zalo.me/${announcement.ffZalo || shopConfig.zaloFF}`} 
+                href={`https://zalo.me/${ffZalo.replace(/\s+/g, '')}`} 
                 target="_blank" 
                 rel="noreferrer"
                 className="contact-link"
               >
-                {announcement.ffZalo || shopConfig.zaloFF}
+                {ffZalo}
               </a>
             </div>
 
+            {announcement.showFcmZalo && (
+              <div className="swal-contact-line">
+                <span className="contact-label">{announcement.fcmLabel || 'ZALO FC:'}</span>
+                <a 
+                  href={`https://zalo.me/${fcmZalo.replace(/\s+/g, '')}`} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="contact-link"
+                >
+                  {fcmZalo}
+                </a>
+              </div>
+            )}
 
             <div className="swal-contact-line">
-              <span className="contact-label">ZALO LQ:</span>
+              <span className="contact-label">{announcement.lqLabel || 'ZALO LQ:'}</span>
               <a 
-                href={`https://zalo.me/${announcement.lqZalo || shopConfig.zaloLQ}`} 
+                href={`https://zalo.me/${lqZalo.replace(/\s+/g, '')}`} 
                 target="_blank" 
                 rel="noreferrer"
                 className="contact-link"
               >
-                {announcement.lqZalo || shopConfig.zaloLQ}
+                {lqZalo}
               </a>
             </div>
           </div>
@@ -59,7 +75,7 @@ export default function AnnouncementModal({ shopConfig, isOpen, onClose }) {
           <div className="swal-warning-box">
             <AlertTriangle size={20} className="warning-icon" />
             <p>
-              {announcement.note || 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ACC ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN TY KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!'}
+              {announcement.note || 'LƯU Ý: AE MUA ACC FC TTT HAY ACC REG NHỚ QUAY VIDEO TỪ LÚC MUA ĐẾN LÚC ĐĂNG NHẬP RỒI VÔ GAME NẾU KHÔNG CÓ VIDEO BÊN VCHUN KHÔNG HỖ TRỢ ĐƯỢC NHA AE CHÚ Ý!!!'}
             </p>
           </div>
 
@@ -70,7 +86,7 @@ export default function AnnouncementModal({ shopConfig, isOpen, onClose }) {
 
         <div className="swal-footer">
           <button className="btn-swal-confirm" onClick={onClose}>
-            Tôi Đã Hiểu
+            {announcement.buttonText || 'Tôi Đã Hiểu'}
           </button>
         </div>
       </div>

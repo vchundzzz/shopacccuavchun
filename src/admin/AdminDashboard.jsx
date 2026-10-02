@@ -11,7 +11,9 @@ import {
   ArrowRight, 
   Plus,
   TrendingUp,
-  ShieldCheck
+  ShieldCheck,
+  Bell,
+  Cloud
 } from 'lucide-react';
 import { formatVND } from '../components/AccountCard';
 import './AdminDashboard.css';
@@ -44,13 +46,17 @@ export default function AdminDashboard({ accounts, banners, categories, onNaviga
           <p>Hệ thống quản lý sản phẩm Free Fire & Liên Quân Mobile - Cập nhật tức thì dữ liệu lên website</p>
         </div>
         <div className="quick-add-group flex items-center gap-2 flex-wrap">
+          <button className="btn-gaming-primary" onClick={() => onNavigateTab('announcement')} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)', borderColor: '#ef4444' }}>
+            <Bell size={16} />
+            <span>Sửa Thông Báo Popup</span>
+          </button>
           <button className="btn-gaming-primary" onClick={() => onNavigateTab('accounts')}>
             <Plus size={16} />
             <span>Thêm Acc Mới</span>
           </button>
-          <button className="btn-gaming-outline" onClick={() => onNavigateTab('categories')}>
-            <FolderTree size={16} />
-            <span>Đổi Ảnh Các Mục Game</span>
+          <button className="btn-gaming-outline" onClick={() => onNavigateTab('cloud')} style={{ borderColor: 'rgba(6, 182, 212, 0.4)', color: '#06b6d4' }}>
+            <Cloud size={16} />
+            <span>Database Đám Mây</span>
           </button>
         </div>
       </div>
@@ -214,8 +220,8 @@ export default function AdminDashboard({ accounts, banners, categories, onNaviga
               <p>Vào tab <strong>Quản Lý Banners</strong> để thay đổi hình ảnh khuyến mãi lớn ngoài trang chủ.</p>
             </div>
             <div className="guide-tip">
-              <strong>4. Hotline & Zalo:</strong>
-              <p>Mọi giao dịch từ khách hàng sẽ kết nối thẳng đến số Zalo <code>0362481351</code> của bạn.</p>
+              <strong>4. Quản lý Thông Báo Popup:</strong>
+              <p>Vào tab <strong>Quản Lý Thông Báo</strong> để sửa nội dung thông báo SweetAlert (Zalo FF, Zalo LQ, lưu ý quay video,...) có xem trước trực quan.</p>
             </div>
           </div>
         </div>
