@@ -1,0 +1,105 @@
+.mobile-nav-bottom {
+  position: fixed;
+  z-index: 10000;
+  right: 12px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: 70px;
+  padding: 6px 4px;
+  overflow: visible;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.dark .mobile-nav-bottom {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+  .mobile-nav-bottom {
+    display: none;
+  }
+}
+
+.mobile-nav-bottom__item {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 2px;
+  color: #64748b;
+  text-align: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.16s ease;
+}
+
+.dark .mobile-nav-bottom__item {
+  color: #94a3b8;
+}
+
+.mobile-nav-bottom__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: transform 0.16s ease;
+}
+
+.mobile-nav-bottom__label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-nav-bottom__item.is-active {
+  color: var(--primary-color);
+}
+
+.mobile-nav-bottom__item.is-active:not(.mobile-nav-bottom__item--primary)::after {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--primary-color);
+  content: '';
+}
+
+.mobile-nav-bottom__item--primary {
+  justify-content: flex-end;
+  padding-bottom: 4px;
+  color: var(--primary-color);
+}
+
+.mobile-nav-bottom__item--primary .mobile-nav-bottom__icon {
+  position: absolute;
+  top: -20px;
+  width: 50px;
+  height: 50px;
+  color: #ffffff;
+  background: var(--primary-color);
+  box-shadow: 0 0 0 5px #ffffff, 0 8px 20px rgba(27, 69, 238, 0.45);
+  border-radius: 50%;
+}
+
+.dark .mobile-nav-bottom__item--primary .mobile-nav-bottom__icon {
+  box-shadow: 0 0 0 5px #1e293b, 0 8px 20px rgba(27, 69, 238, 0.6);
+}

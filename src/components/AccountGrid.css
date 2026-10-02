@@ -1,0 +1,61 @@
+/* Account Grid Styles */
+.account-grid-section {
+  padding: 24px 0;
+}
+
+.view-more-link-btn {
+  background: transparent;
+  color: #ff9800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-gaming);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.view-more-link-btn:hover {
+  background: rgba(255, 152, 0, 0.1);
+  transform: translateX(4px);
+  color: #ff7043;
+}
+
+.account-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .account-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .account-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .account-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.empty-account-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-msg {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}

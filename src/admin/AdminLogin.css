@@ -1,0 +1,205 @@
+/* Admin Login Screen Styles */
+.admin-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #07080c;
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(255, 87, 34, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 50%);
+}
+
+.login-card-container {
+  width: 100%;
+  max-width: 440px;
+  background: #111420;
+  border: 1px solid rgba(255, 87, 34, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 87, 34, 0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.back-to-shop-btn {
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  padding: 0;
+  margin-bottom: -6px;
+  width: fit-content;
+}
+.back-to-shop-btn:hover {
+  color: #ff9800;
+  transform: translateX(-3px);
+}
+
+.login-card-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.2) 0%, rgba(255, 143, 0, 0.2) 100%);
+  border: 1px solid rgba(255, 87, 34, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.lock-icon {
+  color: #ff7043;
+}
+
+.login-card-header h2 {
+  font-size: 1.25rem;
+  color: #fff;
+  letter-spacing: 0.8px;
+}
+
+.login-card-header p {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+/* Error Alert */
+.login-error-alert {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+/* Form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-input-group label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.input-with-icon input {
+  width: 100%;
+  background: #191c28;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 11px 40px 11px 38px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.input-with-icon input:focus {
+  border-color: var(--ff-primary);
+  box-shadow: 0 0 12px rgba(255, 87, 34, 0.3);
+}
+
+.toggle-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 4px;
+}
+.toggle-eye-btn:hover {
+  color: #fff;
+}
+
+.login-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.remember-checkbox input {
+  accent-color: var(--ff-primary);
+}
+
+.login-submit-btn {
+  padding: 12px;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+/* Footer Hint */
+.credentials-hint-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.credentials-hint-box strong {
+  display: block;
+  color: #ff9800;
+  margin-bottom: 2px;
+}
+
+.credentials-hint-box code {
+  color: #38bdf8;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.credentials-hint-box small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-dim);
+}

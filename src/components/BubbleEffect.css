@@ -1,0 +1,113 @@
+/* =========================================================
+   FLOATING SOAP BUBBLE EFFECT
+   Translucent, realistic 3D iridescent bubbles matching shoptyseisei
+   ========================================================= */
+
+.bubbles-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.soap-bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 68% 32%,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.3) 18%,
+    rgba(147, 197, 253, 0.28) 35%,
+    rgba(244, 114, 182, 0.18) 55%,
+    rgba(255, 255, 255, 0.08) 75%,
+    rgba(255, 255, 255, 0.42) 98%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 
+    inset 0 0 10px rgba(255, 255, 255, 0.5),
+    inset -2px -2px 8px rgba(147, 197, 253, 0.35),
+    0 4px 16px rgba(59, 130, 246, 0.15);
+  will-change: transform, opacity;
+  animation-name: bubbleRise, bubbleSway;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear, ease-in-out;
+}
+
+/* Primary Top-Left Highlight */
+.soap-bubble::before {
+  content: '';
+  position: absolute;
+  top: 16%;
+  left: 20%;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.4) 40%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: rotate(-30deg);
+}
+
+/* Secondary Bottom-Right Highlight */
+.soap-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: 18%;
+  right: 22%;
+  width: 16%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0) 80%
+  );
+}
+
+/* Vertical Rise Animation */
+@keyframes bubbleRise {
+  0% {
+    bottom: -90px;
+    opacity: 0;
+  }
+  4% {
+    opacity: 0.85;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  98% {
+    opacity: 0.2;
+  }
+  100% {
+    bottom: 108vh;
+    opacity: 0;
+  }
+}
+
+/* Horizontal Sway & Wobble */
+@keyframes bubbleSway {
+  0%, 100% {
+    margin-left: 0px;
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    margin-left: -22px;
+    transform: rotate(-4deg) scale(1.03);
+  }
+  50% {
+    margin-left: 18px;
+    transform: rotate(3deg) scale(0.97);
+  }
+  75% {
+    margin-left: -15px;
+    transform: rotate(-2deg) scale(1.02);
+  }
+}

@@ -1,0 +1,159 @@
+/* Admin Banners View Styles */
+.admin-banners-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.banners-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #111420;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.banners-view-header h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.banners-view-header p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.banners-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.banner-config-card {
+  background: #111420;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.banner-config-card:hover {
+  border-color: rgba(255, 87, 34, 0.3);
+}
+
+.card-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-header-badge h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.support-edit-item-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.support-edit-item-box:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.card-idx-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #38bdf8;
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.admin-input {
+  width: 100%;
+  background: #191c28;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.admin-input:focus {
+  border-color: #ff5722;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.25);
+  background: #1e2232;
+}
+
+.card-quick-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Sticky Floating Bottom Action Bar */
+.admin-floating-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 260px;
+  right: 0;
+  background: #0d1017;
+  border-top: 2px solid #ff5722;
+  padding: 14px 28px;
+  z-index: 1000;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 768px) {
+  .admin-floating-bottom-bar {
+    left: 70px;
+    padding: 10px 14px;
+  }
+}
+
+.floating-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.floating-hint {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}

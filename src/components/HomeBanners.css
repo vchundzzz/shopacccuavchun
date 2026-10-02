@@ -1,0 +1,193 @@
+.home-top-section {
+  margin-top: 14px;
+  margin-bottom: 30px;
+}
+
+.main-banner-card {
+  background: #ffffff;
+  border: 1px solid var(--primary-color);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.dark .main-banner-card {
+  background: #1e293b;
+}
+
+.main-banner-img-wrap img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* 4 Quick Support Cards */
+.support-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .support-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.support-card-item {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.support-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+}
+
+.support-card-img {
+  width: 100%;
+  object-fit: cover;
+  aspect-ratio: 4.5 / 1;
+}
+
+/* Shortcuts: Bạn muốn mua acc game gì? */
+.home-featured-shortcuts {
+  margin: 16px auto 0;
+  text-align: center;
+}
+
+.home-featured-shortcuts__panel {
+  display: inline-block;
+  max-width: 100%;
+  padding: 12px 24px;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.dark .home-featured-shortcuts__panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.home-featured-shortcuts__title {
+  margin: 0 0 10px;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.dark .home-featured-shortcuts__title {
+  color: #f1f5f9;
+}
+
+.home-featured-shortcuts__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px 24px;
+}
+
+.home-featured-shortcuts__item {
+  display: flex;
+  width: 64px;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.home-featured-shortcuts__icon {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  transition: transform 0.2s ease;
+}
+
+.home-featured-shortcuts__item:hover .home-featured-shortcuts__icon {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.home-featured-shortcuts__icon img {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #f1f5f9;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.home-featured-shortcuts__hot {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 9px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.4;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+}
+
+.home-featured-shortcuts__label {
+  margin-top: 7px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dark .home-featured-shortcuts__label {
+  color: #cbd5e1;
+}
+
+/* 3 Featured Promo Banners */
+.home-featured-banners {
+  display: grid;
+  max-width: 900px;
+  margin: 16px auto 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-featured-banners__item {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.home-featured-banners__item:hover {
+  transform: translateY(-2px);
+}
+
+.home-featured-banners__item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.home-featured-banners__item--wide {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .home-featured-banners {
+    grid-template-columns: 1fr;
+  }
+}

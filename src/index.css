@@ -1,0 +1,346 @@
+/* =========================================================
+   CLONE 99% SHOPTYSEISEI.NET DESIGN SYSTEM
+   Dev Style: CMSNT / DashCode / Gaming Theme
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;800&family=Play:wght@400;700&display=swap');
+
+:root {
+  --primary-color: #1b45ee;
+  --primary-hover: #1538c2;
+  --primary-glow: rgba(27, 69, 238, 0.35);
+  --accent-red: #dc2626;
+  --accent-red-hover: #b91c1c;
+  --accent-green: #16a34a;
+  
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --border-card: #e2e8f0;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #f8fafc;
+
+  --sidebar-width: 248px;
+  --header-height: 64px;
+}
+
+/* Dark Mode Variables */
+.dark {
+  --bg-sidebar: #1e293b;
+  --bg-card: #0f172a;
+  --border-card: #334155;
+  --text-dark: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+/* Grayscale Mode */
+.grayscale-mode {
+  filter: grayscale(100%) !important;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-dark);
+  background-image: url('https://i.pinimg.com/736x/ce/49/13/ce4913ffa276814eeaf18950db6c47b0.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow-x: hidden;
+}
+
+/* Scrollbar matching shoptyseisei */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #282a38;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e23388;
+}
+
+::selection {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Text & Colors Utilities */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+/* Layout Container */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Main Layout Wrapper */
+.layout-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  transition: margin-left 0.25s ease;
+}
+
+@media (min-width: 1280px) {
+  .layout-content-wrapper.with-sidebar {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+/* Content Container */
+.site-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .site-container {
+    padding: 10px;
+  }
+}
+
+/* Category Glow Text */
+.category-name {
+  text-shadow: 0 0 3px #fff, 0 0 3px var(--primary-color);
+}
+
+/* Animations */
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 14px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--accent-red);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-red:hover {
+  background-color: var(--accent-red-hover);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Form inputs */
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Grid & Flex Utilities */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.flex-1 { flex: 1 1 0%; }
+
+/* High-Visibility Gaming Action Buttons (Admin & Storefront) */
+.btn-gaming-primary {
+  background: linear-gradient(135deg, #ff5722 0%, #d84315 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  padding: 10px 18px !important;
+  border-radius: 8px !important;
+  border: 1px solid #ff7043 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(255, 87, 34, 0.45) !important;
+  transition: all 0.2s ease !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+.btn-gaming-primary:hover {
+  background: linear-gradient(135deg, #ff7043 0%, #e64a19 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.65) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-gaming-success {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  padding: 10px 18px !important;
+  border-radius: 8px !important;
+  border: 1px solid #34d399 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
+  transition: all 0.2s ease !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+.btn-gaming-success:hover {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.65) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-gaming-outline {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  padding: 9px 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-gaming-outline:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-gaming-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid #f87171 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+}
+
+.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 0.82rem !important;
+}
+
+

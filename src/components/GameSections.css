@@ -1,0 +1,203 @@
+.game-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.game-section-item {
+  scroll-margin-top: 80px;
+}
+
+.game-section-head {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.game-banner-title {
+  width: 100%;
+  max-width: 550px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
+.game-support-link-btn {
+  display: inline-block;
+  margin-top: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 6px;
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .game-support-link-btn {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.game-support-link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.game-support-link-btn img {
+  width: 100%;
+  max-width: 440px;
+  height: 80px;
+  object-fit: contain;
+}
+
+/* Category Grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1024px) {
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Special single layout for Liên Quân (only Nick cực phẩm) */
+.category-grid.lq-single-grid {
+  display: flex;
+  justify-content: center;
+}
+
+.category-grid.lq-single-grid .category-showcase-card {
+  max-width: 340px;
+  width: 100%;
+}
+
+/* Category Showcase Card */
+.category-showcase-card {
+  min-height: 270px;
+  border: 1px solid var(--primary-color);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .category-showcase-card {
+  background: #1e293b;
+}
+
+.category-showcase-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(27, 69, 238, 0.18);
+}
+
+.category-card-thumb {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+@media (max-width: 768px) {
+  .category-card-thumb {
+    height: 120px;
+  }
+}
+
+.category-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.category-showcase-card:hover .category-card-thumb img {
+  transform: scale(1.05);
+}
+
+.category-stock-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.category-card-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.category-card-title {
+  min-height: 2.4rem;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #1e293b;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dark .category-card-title {
+  color: #f1f5f9;
+}
+
+.category-card-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.category-card-btn-wrap {
+  margin-top: auto;
+  width: 100%;
+}
+
+.category-view-all-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1b45ee 0%, #2563eb 100%);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(27, 69, 238, 0.3);
+  transition: all 0.2s ease;
+}
+
+.category-view-all-btn:hover {
+  background: linear-gradient(135deg, #1538c2 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(27, 69, 238, 0.45);
+}

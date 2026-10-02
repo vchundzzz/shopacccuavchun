@@ -1,0 +1,406 @@
+/* =========================================================
+   BUY / RENT VIA ZALO MODAL STYLING
+   Safe, modern, centered modal overlay matching shoptyseisei
+   ========================================================= */
+
+.zalo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.zalo-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .zalo-modal-container {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+/* Modal Header */
+.zalo-modal-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #1b45ee 0%, #1538c2 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.zalo-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zalo-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.zalo-header-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.zalo-header-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.zalo-modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.zalo-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Modal Body */
+.zalo-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(85vh - 75px);
+  overflow-y: auto;
+}
+
+/* Account Summary Card */
+.zalo-acc-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.dark .zalo-acc-summary {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.zalo-summary-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.dark .zalo-summary-thumb {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.zalo-summary-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.zalo-summary-code-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.dark .zalo-summary-code-badge {
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+}
+
+.zalo-summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 4px 0;
+}
+
+.dark .zalo-summary-title {
+  color: #f8fafc;
+}
+
+.zalo-summary-price {
+  font-size: 18px;
+  font-weight: 950;
+  color: #dc2626;
+}
+
+.dark .zalo-summary-price {
+  color: #f87171;
+}
+
+/* Steps List */
+.zalo-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zalo-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.dark .zalo-step-item {
+  background: rgba(30, 41, 59, 0.6);
+  color: #cbd5e1;
+}
+
+.zalo-step-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-color, #1b45ee);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.zalo-step-content strong {
+  color: #0f172a;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.dark .zalo-step-content strong {
+  color: #f8fafc;
+}
+
+.zalo-step-content p {
+  margin: 0;
+}
+
+/* Hotline Highlight Box */
+.zalo-contact-highlight {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dark .zalo-contact-highlight {
+  background: rgba(29, 78, 216, 0.15);
+  border-color: rgba(29, 78, 216, 0.35);
+}
+
+.zalo-number-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.zalo-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dark .zalo-label {
+  color: #94a3b8;
+}
+
+.zalo-phone-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1d4ed8;
+  letter-spacing: 0.5px;
+}
+
+.dark .zalo-phone-val {
+  color: #60a5fa;
+}
+
+.btn-copy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #93c5fd;
+  color: #1d4ed8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-chip:hover {
+  background: #dbeafe;
+}
+
+.dark .btn-copy-chip {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+/* Modal Actions */
+.zalo-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-chat-zalo-big {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff !important;
+  font-weight: 900;
+  font-size: 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border: 1px solid #16a34a;
+  cursor: pointer;
+}
+
+.btn-chat-zalo-big:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(22, 163, 74, 0.35);
+  color: #ffffff;
+}
+
+.btn-chat-zalo-big .zalo-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 2px;
+}
+
+.btn-copy-code-alt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-code-alt:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.dark .btn-copy-code-alt {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.dark .btn-copy-code-alt:hover {
+  background: #1e293b;
+}
