@@ -54,19 +54,23 @@ export const supabaseService = {
       if (configRes.data && configRes.data.length > 0) {
         const row = configRes.data[0];
         result.shopConfig = {
-          shopName: row.shop_name,
-          siteTitle: row.site_title,
-          tagline: row.tagline,
-          blackLogo: row.black_logo,
-          whiteLogo: row.white_logo,
-          avatar: row.avatar,
-          hotline: row.hotline,
-          zaloFF: row.zalo_ff,
-          zaloFCM: row.zalo_fcm,
-          zaloLQ: row.zalo_lq,
-          facebookLink: row.facebook_link,
-          workingHours: row.working_hours,
-          mainBanner: row.main_banner,
+          shopName: row.shop_name || 'VANCHUNG.CLICK',
+          siteTitle: row.banner_title || row.site_title || 'SHOWROOM CHO THUÊ ACC GAME',
+          tagline: row.banner_subtitle || row.tagline || 'SHOWROOM CHO THUÊ ACC GAME UY TÍN HÀNG ĐẦU',
+          blackLogo: row.logo_url || row.black_logo || '/images/logo-shopvanchung.png',
+          whiteLogo: row.logo_url || row.white_logo || '/images/logo-shopvanchung.png',
+          avatar: row.logo_url || row.avatar || '/images/logo-shopvanchung.png',
+          hotline: row.hotline || '0362481351',
+          zaloFF: row.zalo_url || row.zalo_ff || '0362481351',
+          zaloFCM: row.zalo_url || row.zalo_fcm || '0362481351',
+          zaloLQ: row.zalo_url || row.zalo_lq || '0362481351',
+          facebookLink: row.facebook_url || row.facebook_link || 'https://www.facebook.com/profile.php?id=100078023670452',
+          workingHours: row.working_hours || '24/7',
+          mainBanner: row.main_banner || '',
+          notification: row.notification_text || '',
+          atmBankName: row.atm_bank_name || '',
+          atmAccountNumber: row.atm_account_number || '',
+          atmAccountName: row.atm_account_name || '',
           supportCards: row.support_cards,
           gameHeaders: row.game_headers,
           popupAnnouncement: row.popup_announcement,
@@ -79,13 +83,13 @@ export const supabaseService = {
       if (Array.isArray(catRes.data) && catRes.data.length > 0) {
         result.categories = catRes.data.map(c => ({
           id: c.id,
-          game: c.game,
+          game: c.slug || c.game || c.id,
           name: c.name,
-          tag: c.tag,
+          tag: c.tag || c.slug || c.id,
           image: c.image,
           minPrice: Number(c.min_price) || 0,
           maxPrice: Number(c.max_price) || 0,
-          order: c.order || 0
+          order: c.display_order ?? c.order ?? 0
         }));
       }
 
@@ -93,14 +97,14 @@ export const supabaseService = {
       if (Array.isArray(accRes.data) && accRes.data.length > 0) {
         result.accounts = accRes.data.map(a => ({
           id: a.id,
-          code: a.code,
+          code: a.code || a.id,
           title: a.title,
-          game: a.game,
+          game: a.game || a.category_id,
           categoryId: a.category_id,
           price: Number(a.price) || 0,
-          originalPrice: Number(a.original_price) || 0,
+          originalPrice: Number(a.original_price) || Number(a.price) || 0,
           level: a.level || 1,
-          rank: a.rank,
+          rank: a.rank || (Array.isArray(a.highlights) ? a.highlights[0] : ''),
           skins: a.skins || 0,
           characters: a.characters,
           pets: a.pets,
@@ -108,8 +112,8 @@ export const supabaseService = {
           outfits: a.outfits,
           rareItems: a.rare_items,
           description: a.description,
-          thumbnail: a.thumbnail,
-          gallery: Array.isArray(a.gallery) ? a.gallery : [a.thumbnail],
+          thumbnail: a.thumb || a.thumbnail,
+          gallery: Array.isArray(a.images) && a.images.length > 0 ? a.images : (Array.isArray(a.gallery) ? a.gallery : [a.thumb || a.thumbnail]),
           status: a.status || 'available',
           hidden: Boolean(a.hidden),
           isVip: Boolean(a.is_vip),
@@ -126,8 +130,8 @@ export const supabaseService = {
           image: b.image,
           title: b.title,
           link: b.link,
-          active: Boolean(b.active),
-          order: b.order || 0
+          active: b.active !== false,
+          order: b.display_order ?? b.order ?? 0
         }));
       }
 
@@ -151,25 +155,18 @@ export const supabaseService = {
         const sc = payload.shopConfig;
         promises.push(
           client.from('shop_config').upsert({
-            id: 'default',
-            shop_name: sc.shopName,
-            site_title: sc.siteTitle,
-            tagline: sc.tagline,
-            black_logo: sc.blackLogo,
-            white_logo: sc.whiteLogo,
-            avatar: sc.avatar,
-            hotline: sc.hotline,
-            zalo_ff: sc.zaloFF,
-            zalo_fcm: sc.zaloFCM,
-            zalo_lq: sc.zaloLQ,
-            facebook_link: sc.facebookLink,
-            working_hours: sc.workingHours,
-            main_banner: sc.mainBanner,
-            support_cards: sc.supportCards,
-            game_headers: sc.gameHeaders,
-            popup_announcement: sc.popupAnnouncement,
-            category_notice: sc.categoryNotice,
-            deposit_banners: sc.depositBanners,
+            id: 'main',
+            shop_name: sc.shopName || 'VANCHUNG.CLICK',
+            logo_url: sc.avatar || sc.blackLogo || sc.logo_url || '/images/logo-shopvanchung.png',
+            banner_title: sc.siteTitle || sc.banner_title || '',
+            banner_subtitle: sc.tagline || sc.banner_subtitle || '',
+            hotline: sc.hotline || '',
+            zalo_url: sc.zaloFF || sc.zalo_url || '',
+            facebook_url: sc.facebookLink || sc.facebook_url || '',
+            notification_text: sc.notification || sc.notification_text || '',
+            atm_bank_name: sc.atmBankName || sc.atm_bank_name || '',
+            atm_account_number: sc.atmAccountNumber || sc.atm_account_number || '',
+            atm_account_name: sc.atmAccountName || sc.atm_account_name || '',
             updated_at: new Date().toISOString()
           })
         );
@@ -177,15 +174,13 @@ export const supabaseService = {
 
       // 2. Upsert categories
       if (Array.isArray(payload.categories)) {
-        const catRows = payload.categories.map(c => ({
-          id: c.id,
-          game: c.game,
-          name: c.name,
-          tag: c.tag,
-          image: c.image,
-          min_price: c.minPrice || 0,
-          max_price: c.maxPrice || 0,
-          order: c.order || 0
+        const catRows = payload.categories.map((c, i) => ({
+          id: String(c.id),
+          name: c.name || '',
+          slug: c.game || c.tag || c.slug || c.id,
+          image: c.image || '',
+          description: c.description || c.name || '',
+          display_order: c.order ?? c.display_order ?? i
         }));
         promises.push(client.from('categories').upsert(catRows));
       }
@@ -193,42 +188,30 @@ export const supabaseService = {
       // 3. Upsert accounts
       if (Array.isArray(payload.accounts)) {
         const accRows = payload.accounts.map(a => ({
-          id: a.id || a.code,
-          code: a.code || a.id,
-          title: a.title,
-          game: a.game,
-          category_id: a.categoryId,
-          price: a.price || 0,
-          original_price: a.originalPrice || a.price || 0,
-          level: a.level || 1,
-          rank: a.rank,
-          skins: a.skins || 0,
-          characters: a.characters,
-          pets: a.pets,
-          gun_skins: a.gunSkins,
-          outfits: a.outfits,
-          rare_items: a.rareItems,
-          description: a.description,
-          thumbnail: a.thumbnail,
-          gallery: a.gallery,
+          id: String(a.id || a.code),
+          category_id: String(a.categoryId || a.category_id || ''),
+          title: a.title || '',
+          price: Number(a.price) || 0,
+          original_price: Number(a.originalPrice) || Number(a.price) || 0,
+          thumb: a.thumbnail || a.thumb || (Array.isArray(a.gallery) ? a.gallery[0] : (Array.isArray(a.images) ? a.images[0] : '')) || '',
+          images: Array.isArray(a.gallery) && a.gallery.length > 0 ? a.gallery : (Array.isArray(a.images) ? a.images : []),
+          highlights: Array.isArray(a.highlights) ? a.highlights : [a.rank, a.skins ? `${a.skins} Trang phục` : ''].filter(Boolean),
+          description: a.description || '',
           status: a.status || 'available',
-          hidden: Boolean(a.hidden),
-          is_vip: Boolean(a.isVip),
-          is_featured: Boolean(a.isFeatured),
-          views: a.views || 0
+          username: a.username || null,
+          password: a.password || null
         }));
         promises.push(client.from('accounts').upsert(accRows));
       }
 
       // 4. Upsert banners
       if (Array.isArray(payload.banners)) {
-        const bannerRows = payload.banners.map(b => ({
-          id: b.id,
-          image: b.image,
-          title: b.title,
-          link: b.link,
-          active: Boolean(b.active),
-          order: b.order || 0
+        const bannerRows = payload.banners.map((b, i) => ({
+          id: String(b.id || `banner_${i}`),
+          title: b.title || '',
+          image: b.image || '',
+          link: b.link || '',
+          display_order: b.order ?? b.display_order ?? i
         }));
         promises.push(client.from('banners').upsert(bannerRows));
       }

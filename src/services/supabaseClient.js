@@ -5,9 +5,12 @@ const STORAGE_KEYS = {
   ANON_KEY: 'shop_supabase_anon_key'
 };
 
-// Default or environment configuration if provided
-const ENV_URL = import.meta.env?.VITE_SUPABASE_URL || '';
-const ENV_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+// Default Supabase project configuration for vanchung.click
+const DEFAULT_URL = 'https://gkkonaaxggjulbutweoc.supabase.co';
+const DEFAULT_ANON_KEY = 'sb_publishable_tY5YIukRNlmkJ21GkVQLeA_1ALvNmu8';
+
+const ENV_URL = import.meta.env?.VITE_SUPABASE_URL || DEFAULT_URL;
+const ENV_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || DEFAULT_ANON_KEY;
 
 let cachedClient = null;
 let currentUrl = '';
@@ -15,8 +18,8 @@ let currentKey = '';
 
 export const supabaseClient = {
   getCredentials(shopConfig) {
-    const url = shopConfig?.supabaseUrl || localStorage.getItem(STORAGE_KEYS.URL) || ENV_URL || '';
-    const anonKey = shopConfig?.supabaseAnonKey || localStorage.getItem(STORAGE_KEYS.ANON_KEY) || ENV_ANON_KEY || '';
+    const url = shopConfig?.supabaseUrl || localStorage.getItem(STORAGE_KEYS.URL) || ENV_URL || DEFAULT_URL;
+    const anonKey = shopConfig?.supabaseAnonKey || localStorage.getItem(STORAGE_KEYS.ANON_KEY) || ENV_ANON_KEY || DEFAULT_ANON_KEY;
     return {
       url: url.trim(),
       anonKey: anonKey.trim()
