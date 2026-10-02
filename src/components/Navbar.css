@@ -216,3 +216,60 @@
   box-shadow: 0 6px 18px rgba(0, 104, 255, 0.5);
   filter: brightness(1.1);
 }
+
+/* Responsive for Header & Nav on Mobile & Tablet */
+@media (max-width: 900px) {
+  .header-main-nav {
+    display: none !important;
+  }
+
+  .header-inner {
+    padding: 0 10px;
+  }
+
+  .header-logo {
+    max-width: 160px;
+    height: 40px;
+  }
+
+  .header-logo img {
+    max-height: 36px;
+  }
+
+  .header-right-tools {
+    gap: 6px;
+  }
+
+  .navbar-zalo-pill {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-logo {
+    max-width: 145px;
+    height: 38px;
+  }
+
+  .header-logo img {
+    max-height: 34px;
+  }
+
+  .navbar-zalo-pill span {
+    display: none !important;
+  }
+
+  .navbar-zalo-pill {
+    padding: 8px;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+  }
+
+  .tool-circle-btn {
+    width: 34px;
+    height: 34px;
+  }
+}

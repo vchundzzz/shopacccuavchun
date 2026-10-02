@@ -190,4 +190,17 @@
   .home-featured-banners {
     grid-template-columns: 1fr;
   }
+  .main-banner-card {
+    padding: 8px;
+    border-radius: 10px;
+  }
+  .home-featured-shortcuts__panel {
+    display: block;
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 16px;
+  }
+  .home-featured-shortcuts__items {
+    gap: 12px 16px;
+  }
 }
