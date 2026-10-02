@@ -48,7 +48,7 @@ export default function AccountDetailPage({
     ? validGallery 
     : (account.thumbnail ? [account.thumbnail] : []);
 
-  const mainImage = account.thumbnail || images[0] || 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg';
+  const mainImage = account.thumbnail || images[0] || '/images/banner-shopvanchung.png';
 
   const defaultMsg = `Chào Shop, tôi muốn thuê tài khoản mã [${account.code || account.id}] giá ${formatVND(account.price)}. Vui lòng hỗ trợ giao dịch giúp tôi!`;
   const zaloDirectLink = `https://zalo.me/${targetZalo}?text=${encodeURIComponent(defaultMsg)}`;

@@ -145,112 +145,148 @@ export const supabaseService = {
     }
   },
 
+  // Save all banners directly to Supabase
+  async saveBanners(banners, shopConfig) {
+    const client = supabaseClient.getClient(shopConfig);
+    if (!client || !Array.isArray(banners)) return { success: false, message: 'Chưa cấu hình Supabase Client' };
+
+    try {
+      const currentIds = banners.map((b, i) => String(b.id || `banner_${i}`));
+
+      // 1. Delete removed banners
+      const { data: existingBanners } = await client.from('banners').select('id');
+      if (Array.isArray(existingBanners) && existingBanners.length > 0) {
+        const toDelete = existingBanners.map(e => e.id).filter(id => !currentIds.includes(id));
+        if (toDelete.length > 0) {
+          await client.from('banners').delete().in('id', toDelete);
+        }
+      }
+
+      // 2. Upsert current banners
+      const rows = banners.map((b, i) => ({
+        id: String(b.id || `banner_${i}`),
+        title: b.title || '',
+        image: b.image || '',
+        link: b.link || '',
+        display_order: Number(b.order ?? b.display_order ?? i + 1)
+      }));
+
+      const { error } = await client.from('banners').upsert(rows);
+      if (error) {
+        console.warn('Lỗi upsert banners lên Supabase:', error);
+        return { success: false, error };
+      }
+      return { success: true };
+    } catch (err) {
+      console.warn('Lỗi saveBanners:', err);
+      return { success: false, error: err };
+    }
+  },
+
   // Save all shop data to Supabase (upsert + sync deletions)
   async saveAllData(payload, shopConfig) {
     const client = supabaseClient.getClient(shopConfig);
     if (!client) return { success: false, message: 'Chưa cấu hình Supabase Client' };
 
     try {
-      // 1. Categories (Save first so accounts FK is satisfied)
-      let validCatIds = new Set();
+      // 1. Categories (Upsert first so FK exists)
       if (Array.isArray(payload.categories)) {
-        validCatIds = new Set(payload.categories.map(c => String(c.id)));
-        
-        // Remove deleted categories
-        const { data: existingCats } = await client.from('categories').select('id');
-        if (Array.isArray(existingCats) && existingCats.length > 0) {
-          const catsToDelete = existingCats.map(e => e.id).filter(id => !validCatIds.has(id));
-          if (catsToDelete.length > 0) {
-            await client.from('categories').delete().in('id', catsToDelete);
-          }
-        }
+        try {
+          const catRows = payload.categories.map((c, i) => ({
+            id: String(c.id),
+            name: c.name || '',
+            slug: c.game || c.tag || c.slug || c.id,
+            image: c.image || '',
+            description: c.description || c.name || '',
+            display_order: c.order ?? c.display_order ?? i
+          }));
+          const { error: catErr } = await client.from('categories').upsert(catRows);
+          if (catErr) console.warn('Lỗi lưu categories lên Supabase:', catErr);
 
-        const catRows = payload.categories.map((c, i) => ({
-          id: String(c.id),
-          name: c.name || '',
-          slug: c.game || c.tag || c.slug || c.id,
-          image: c.image || '',
-          description: c.description || c.name || '',
-          display_order: c.order ?? c.display_order ?? i
-        }));
-        const { error: catErr } = await client.from('categories').upsert(catRows);
-        if (catErr) console.warn('Lỗi lưu categories lên Supabase:', catErr);
+          // Remove deleted categories
+          const validCatIds = new Set(payload.categories.map(c => String(c.id)));
+          const { data: existingCats } = await client.from('categories').select('id');
+          if (Array.isArray(existingCats) && existingCats.length > 0) {
+            const catsToDelete = existingCats.map(e => e.id).filter(id => !validCatIds.has(id));
+            if (catsToDelete.length > 0) {
+              await client.from('categories').delete().in('id', catsToDelete);
+            }
+          }
+        } catch (catErr) {
+          console.warn('Lỗi đồng bộ categories:', catErr);
+        }
       }
 
       // 2. Accounts (Upsert + Remove deleted accounts)
       if (Array.isArray(payload.accounts)) {
-        const currentIds = payload.accounts.map(a => String(a.id || a.code));
+        try {
+          const currentIds = payload.accounts.map(a => String(a.id || a.code));
 
-        // Delete accounts removed by admin
-        const { data: existingAccs } = await client.from('accounts').select('id');
-        if (Array.isArray(existingAccs) && existingAccs.length > 0) {
-          const toDelete = existingAccs.map(e => e.id).filter(id => !currentIds.includes(id));
-          if (toDelete.length > 0) {
-            await client.from('accounts').delete().in('id', toDelete);
+          // Delete accounts removed by admin
+          const { data: existingAccs } = await client.from('accounts').select('id');
+          if (Array.isArray(existingAccs) && existingAccs.length > 0) {
+            const toDelete = existingAccs.map(e => e.id).filter(id => !currentIds.includes(id));
+            if (toDelete.length > 0) {
+              await client.from('accounts').delete().in('id', toDelete);
+            }
           }
-        }
 
-        const accRows = payload.accounts.map(a => {
-          const catId = String(a.categoryId || a.category_id || '');
-          const safeCatId = validCatIds.has(catId) ? catId : null;
-          return {
-            id: String(a.id || a.code),
-            category_id: safeCatId,
-            title: a.title || '',
-            price: Number(a.price) || 0,
-            original_price: Number(a.originalPrice) || Number(a.price) || 0,
-            thumb: a.thumbnail || a.thumb || (Array.isArray(a.gallery) ? a.gallery[0] : (Array.isArray(a.images) ? a.images[0] : '')) || '',
-            images: Array.isArray(a.gallery) && a.gallery.length > 0 ? a.gallery : (Array.isArray(a.images) ? a.images : []),
-            highlights: Array.isArray(a.highlights) ? a.highlights : [a.game || 'freefire', a.rank, a.skins ? `${a.skins} Trang phục` : ''].filter(Boolean),
-            description: a.description || '',
-            status: a.status || 'available',
-            username: a.username || null,
-            password: a.password || null
-          };
-        });
-        const { error: accErr } = await client.from('accounts').upsert(accRows);
-        if (accErr) console.warn('Lỗi lưu accounts lên Supabase:', accErr);
+          // Fetch verified categories from DB to ensure FK is never violated
+          const { data: dbCats } = await client.from('categories').select('id');
+          const realCatIds = new Set((dbCats || []).map(c => c.id));
+
+          const accRows = payload.accounts.map(a => {
+            const catId = String(a.categoryId || a.category_id || '');
+            const safeCatId = realCatIds.has(catId) ? catId : null;
+            return {
+              id: String(a.id || a.code),
+              category_id: safeCatId,
+              title: a.title || '',
+              price: Number(a.price) || 0,
+              original_price: Number(a.originalPrice) || Number(a.price) || 0,
+              thumb: a.thumbnail || a.thumb || (Array.isArray(a.gallery) ? a.gallery[0] : (Array.isArray(a.images) ? a.images[0] : '')) || '',
+              images: Array.isArray(a.gallery) && a.gallery.length > 0 ? a.gallery : (Array.isArray(a.images) ? a.images : []),
+              highlights: Array.isArray(a.highlights) ? a.highlights : [a.game || 'freefire', a.rank, a.skins ? `${a.skins} Trang phục` : ''].filter(Boolean),
+              description: a.description || '',
+              status: a.status || 'available',
+              username: a.username || null,
+              password: a.password || null
+            };
+          });
+          const { error: accErr } = await client.from('accounts').upsert(accRows);
+          if (accErr) console.warn('Lỗi lưu accounts lên Supabase:', accErr);
+        } catch (accErr) {
+          console.warn('Lỗi đồng bộ accounts:', accErr);
+        }
       }
 
-      // 3. Banners
+      // 3. Banners (Dedicated direct sync)
       if (Array.isArray(payload.banners)) {
-        const currentBannerIds = payload.banners.map((b, i) => String(b.id || `banner_${i}`));
-        const { data: existingBanners } = await client.from('banners').select('id');
-        if (Array.isArray(existingBanners) && existingBanners.length > 0) {
-          const bannersToDelete = existingBanners.map(e => e.id).filter(id => !currentBannerIds.includes(id));
-          if (bannersToDelete.length > 0) {
-            await client.from('banners').delete().in('id', bannersToDelete);
-          }
-        }
-
-        const bannerRows = payload.banners.map((b, i) => ({
-          id: String(b.id || `banner_${i}`),
-          title: b.title || '',
-          image: b.image || '',
-          link: b.link || '',
-          display_order: b.order ?? b.display_order ?? i
-        }));
-        await client.from('banners').upsert(bannerRows);
+        await this.saveBanners(payload.banners, shopConfig);
       }
 
       // 4. Shop Config
       if (payload.shopConfig) {
-        const sc = payload.shopConfig;
-        await client.from('shop_config').upsert({
-          id: 'main',
-          shop_name: sc.shopName || 'VANCHUNG.CLICK',
-          logo_url: sc.avatar || sc.blackLogo || sc.logo_url || '/images/logo-shopvanchung.png',
-          banner_title: sc.siteTitle || sc.banner_title || '',
-          banner_subtitle: sc.tagline || sc.banner_subtitle || '',
-          hotline: sc.hotline || '',
-          zalo_url: sc.zaloFF || sc.zalo_url || '',
-          facebook_url: sc.facebookLink || sc.facebook_url || '',
-          notification_text: sc.notification || sc.notification_text || '',
-          atm_bank_name: sc.atmBankName || sc.atm_bank_name || '',
-          atm_account_number: sc.atmAccountNumber || sc.atm_account_number || '',
-          atm_account_name: sc.atmAccountName || sc.atm_account_name || '',
-          updated_at: new Date().toISOString()
-        });
+        try {
+          const sc = payload.shopConfig;
+          await client.from('shop_config').upsert({
+            id: 'main',
+            shop_name: sc.shopName || 'VANCHUNG.CLICK',
+            logo_url: sc.avatar || sc.blackLogo || sc.logo_url || '/images/logo-shopvanchung.png',
+            banner_title: sc.siteTitle || sc.banner_title || '',
+            banner_subtitle: sc.tagline || sc.banner_subtitle || '',
+            hotline: sc.hotline || '',
+            zalo_url: sc.zaloFF || sc.zalo_url || '',
+            facebook_url: sc.facebookLink || sc.facebook_url || '',
+            notification_text: sc.notification || sc.notification_text || '',
+            atm_bank_name: sc.atmBankName || sc.atm_bank_name || '',
+            atm_account_number: sc.atmAccountNumber || sc.atm_account_number || '',
+            atm_account_name: sc.atmAccountName || sc.atm_account_name || '',
+            updated_at: new Date().toISOString()
+          });
+        } catch (scErr) {
+          console.warn('Lỗi lưu shop_config:', scErr);
+        }
       }
 
       return { success: true, message: 'Đã lưu và đồng bộ toàn bộ dữ liệu lên Supabase thành công!' };

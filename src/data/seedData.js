@@ -16,7 +16,7 @@ export const DEFAULT_SHOP_CONFIG = {
   cloudDbUrl: 'https://shopaccvchun-default-rtdb.asia-southeast1.firebasedatabase.app',
   
   // Banner chính trên cùng
-  mainBanner: 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg',
+  mainBanner: '/images/banner-shopvanchung.png',
   
   // 4 Thẻ hỗ trợ nhanh trên trang chủ
   supportCards: [
@@ -168,7 +168,7 @@ export const INITIAL_BANNERS = [
     buttonText: 'LIÊN HỆ ZALO NGAY',
     link: 'https://zalo.me/0362481351',
     badge: 'HOT',
-    image: 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg',
+    image: '/images/banner-shopvanchung.png',
     active: true,
     order: 1
   }

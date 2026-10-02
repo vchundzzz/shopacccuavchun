@@ -84,6 +84,11 @@ export default function AdminBanners({
     if (editingBanner) {
       const updated = banners.map(b => b.id === editingBanner.id ? { ...b, ...bannerForm } : b);
       if (onUpdateBanners) onUpdateBanners(updated);
+      if (editingBanner.id === 'bn-main' || banners[0]?.id === editingBanner.id) {
+        const nextCfg = { ...formData, mainBanner: bannerForm.image };
+        setFormData(nextCfg);
+        if (onUpdateShopConfig) onUpdateShopConfig(nextCfg);
+      }
       showToast('Đã cập nhật banner quảng cáo thành công!');
     } else {
       const newBanner = {
@@ -156,9 +161,23 @@ export default function AdminBanners({
     });
   };
 
+  const handleMainBannerChange = (val) => {
+    const nextCfg = { ...formData, mainBanner: val };
+    setFormData(nextCfg);
+    if (onUpdateShopConfig) onUpdateShopConfig(nextCfg);
+    if (banners.length > 0) {
+      const updated = banners.map((b, idx) => idx === 0 ? { ...b, image: val } : b);
+      if (onUpdateBanners) onUpdateBanners(updated);
+    }
+  };
+
   const handleSaveAll = (e) => {
     if (e) e.preventDefault();
-    if (onUpdateBanners) onUpdateBanners(banners);
+    let currentBanners = banners;
+    if (formData.mainBanner && banners.length > 0 && banners[0].image !== formData.mainBanner) {
+      currentBanners = banners.map((b, idx) => idx === 0 ? { ...b, image: formData.mainBanner } : b);
+    }
+    if (onUpdateBanners) onUpdateBanners(currentBanners);
     if (onUpdateShopConfig) onUpdateShopConfig(formData);
     if (onUpdateCategories) onUpdateCategories(categoryList);
     showToast('Đã lưu thành công! Toàn bộ banner và cấu hình đã được cập nhật.');
@@ -166,7 +185,11 @@ export default function AdminBanners({
 
   const handleSaveAndExit = (e) => {
     if (e) e.preventDefault();
-    if (onUpdateBanners) onUpdateBanners(banners);
+    let currentBanners = banners;
+    if (formData.mainBanner && banners.length > 0 && banners[0].image !== formData.mainBanner) {
+      currentBanners = banners.map((b, idx) => idx === 0 ? { ...b, image: formData.mainBanner } : b);
+    }
+    if (onUpdateBanners) onUpdateBanners(currentBanners);
     if (onUpdateShopConfig) onUpdateShopConfig(formData);
     if (onUpdateCategories) onUpdateCategories(categoryList);
     showToast('Đã lưu thành công! Đang chuyển sang trang chủ...');
@@ -320,7 +343,7 @@ export default function AdminBanners({
             <ImageFileInput 
               label="Chọn tệp ảnh banner chính từ thiết bị:"
               value={formData.mainBanner}
-              onChange={(val) => setFormData({ ...formData, mainBanner: val })}
+              onChange={handleMainBannerChange}
               aspectRatio="banner"
               maxWidth={1600}
               maxHeight={800}
@@ -537,6 +560,16 @@ export default function AdminBanners({
                   maxWidth={1600}
                   maxHeight={800}
                 />
+                <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs text-slate-500 font-semibold">Hoặc chọn mẫu:</span>
+                  <button
+                    type="button"
+                    className="text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 font-bold px-2 py-1 rounded border border-indigo-200"
+                    onClick={() => setBannerForm({ ...bannerForm, image: '/images/banner-shopvanchung.png' })}
+                  >
+                    Dùng Banner Chuẩn SHOPVANCHUNG
+                  </button>
+                </div>
                 <div className="mt-2">
                   <label className="text-xs text-slate-500 font-semibold mb-1 block">Hoặc dán trực tiếp link URL ảnh:</label>
                   <input 

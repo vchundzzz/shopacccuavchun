@@ -281,6 +281,7 @@ export const storage = {
   saveBanners(banners) {
     try {
       localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(banners));
+      supabaseService.saveBanners(banners, this.getShopConfig());
       return this.persistDataToDisk({ banners });
     } catch (e) {
       console.error('Error saving banners', e);

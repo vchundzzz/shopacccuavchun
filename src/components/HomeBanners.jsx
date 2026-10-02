@@ -74,7 +74,7 @@ export default function HomeBanners({ shopConfig, banners = [], onSelectGame, on
   };
 
   // Fallback single banner image
-  const fallbackImage = shopConfig.mainBanner || "https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg";
+  const fallbackImage = shopConfig.mainBanner || "/images/banner-shopvanchung.png";
 
   return (
     <section className="home-top-section">
