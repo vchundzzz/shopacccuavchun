@@ -91,7 +91,7 @@ export default function App() {
     return () => window.removeEventListener('focus', syncData);
   }, [isAdminRoute]);
 
-  // Listen to hash change (e.g. when typing #admin or navigating to #/tai-khoan/:id)
+  // Listen to hash change & popstate (browser back/forward arrows and direct URLs)
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash || '';
@@ -102,26 +102,80 @@ export default function App() {
         return;
       }
       
-      // Direct category or product detail link matching shoptyseisei
-      if (hash.startsWith('#/tai-khoan/') || hash.startsWith('#/thong-tin/') || hash.startsWith('#/acc/')) {
-        const parts = hash.split('/');
-        const idOrCode = parts[2];
+      // 1. Account detail page: #/acc/:code or #/thong-tin/:code
+      if (hash.startsWith('#/acc/') || hash.startsWith('#/thong-tin/')) {
+        const code = hash.replace(/^#\/(acc|thong-tin)\//, '').split('/')[0];
+        if (code) {
+          setSelectedAccountId(code);
+          setActiveTab('account-detail');
+          return;
+        }
+      }
+
+      // 2. Category showroom: #/danh-muc/:id
+      if (hash.startsWith('#/danh-muc/')) {
+        const catId = hash.replace('#/danh-muc/', '').split('/')[0];
+        if (catId) {
+          setSelectedCategoryId(catId);
+          setSelectedAccountId(null);
+          setActiveTab('category');
+          return;
+        }
+      }
+
+      // 3. Category or product detail link matching #/tai-khoan/:idOrCode
+      if (hash.startsWith('#/tai-khoan/')) {
+        const idOrCode = hash.replace('#/tai-khoan/', '').split('/')[0];
         if (idOrCode) {
-          const isCat = categories.some(c => c.id === idOrCode);
-          if (isCat || idOrCode.startsWith('ff-') || idOrCode.startsWith('lq-') || idOrCode.includes('duoi')) {
+          const isCat = categories.some(c => c.id === idOrCode) ||
+                        idOrCode.startsWith('ff-') || 
+                        idOrCode.startsWith('lq-') || 
+                        idOrCode.includes('duoi') ||
+                        idOrCode.includes('sieu-pham') ||
+                        idOrCode.includes('hoc-sinh') ||
+                        idOrCode.includes('cuc-pham');
+          if (isCat) {
             setSelectedCategoryId(idOrCode);
+            setSelectedAccountId(null);
             setActiveTab('category');
           } else {
             setSelectedAccountId(idOrCode);
             setActiveTab('account-detail');
           }
+          return;
         }
       }
+
+      // 4. Game tabs: #/freefire, #freefire, #/lienquan, #lienquan
+      if (hash === '#/freefire' || hash === '#freefire') {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('freefire');
+        return;
+      }
+      if (hash === '#/lienquan' || hash === '#lienquan') {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('lienquan');
+        return;
+      }
+
+      // 5. Default Home: empty hash, #, #/, or #/home
+      if (!hash || hash === '#' || hash === '#/' || hash === '#/home' || hash === '#home') {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('home');
+      }
     };
+
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
+  }, [categories]);
 
   // Filter State for catalog view
   const defaultFilters = {
@@ -171,20 +225,39 @@ export default function App() {
   // Select category from GameSections
   const handleSelectCategory = (catId) => {
     setSelectedCategoryId(catId);
+    setSelectedAccountId(null);
     setActiveTab('category');
-    window.location.hash = `#/tai-khoan/${catId}`;
+    window.location.hash = `#/danh-muc/${catId}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-
-  // View details -> Opens dedicated product detail page like shoptyseisei.net/tai-khoan/thong-tin/...
+  // View details -> Opens dedicated product detail page like /acc/:code
   const handleViewDetails = (acc) => {
     const code = acc.code ? acc.code.replace('#', '') : acc.id;
     setSelectedAccountId(code);
     setActiveTab('account-detail');
-    window.location.hash = `#/tai-khoan/${code}`;
+    window.location.hash = `#/acc/${code}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setAccounts(prev => prev.map(a => a.id === acc.id ? { ...a, views: (a.views || 0) + 1 } : a));
+  };
+
+  // Navigation tab handler with hash update
+  const handleNavigateTab = (tab) => {
+    setActiveTab(tab);
+    setSelectedAccountId(null);
+    if (tab === 'home') {
+      setSelectedCategoryId(null);
+      window.location.hash = '#/';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (tab === 'freefire') {
+      setSelectedCategoryId(null);
+      window.location.hash = '#/freefire';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (tab === 'lienquan') {
+      setSelectedCategoryId(null);
+      window.location.hash = '#/lienquan';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Buy now -> Direct push to Zalo + Open guidance modal
@@ -325,14 +398,7 @@ export default function App() {
         <Navbar 
           shopConfig={shopConfig}
           activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-            setSelectedAccountId(null);
-            if (tab === 'home') {
-              setSelectedCategoryId(null);
-              window.location.hash = '';
-            }
-          }}
+          setActiveTab={handleNavigateTab}
           isDark={isDark}
           onToggleDark={() => setIsDark(!isDark)}
           isGrayscale={isGrayscale}
@@ -344,9 +410,10 @@ export default function App() {
           {/* VIEW A: TRANG CHỦ SHOWROOM */}
           {activeTab === 'home' && (
             <>
-              {/* Home Banners (Top Banner + 4 Support Cards + Quick Game Picker) */}
+              {/* Home Banners (Top Slider Banner + 4 Support Cards + Quick Game Picker) */}
               <HomeBanners 
                 shopConfig={shopConfig}
+                banners={banners}
                 onSelectGame={(game) => {
                   const el = document.getElementById(game);
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -371,10 +438,11 @@ export default function App() {
               accounts={accounts}
               shopConfig={shopConfig}
               onBack={() => {
-                setActiveTab('home');
-                setSelectedCategoryId(null);
-                window.location.hash = '';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  handleNavigateTab('home');
+                }
               }}
               onViewDetails={handleViewDetails}
               onBuyNow={handleBuyNow}
@@ -389,15 +457,16 @@ export default function App() {
                 categories={categories}
                 shopConfig={shopConfig}
                 onBack={() => {
-                  if (selectedCategoryId) {
+                  if (window.history.length > 1) {
+                    window.history.back();
+                  } else if (selectedCategoryId) {
+                    setSelectedAccountId(null);
                     setActiveTab('category');
-                    window.location.hash = `#/tai-khoan/${selectedCategoryId}`;
+                    window.location.hash = `#/danh-muc/${selectedCategoryId}`;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   } else {
-                    setActiveTab('home');
-                    window.location.hash = '';
+                    handleNavigateTab('home');
                   }
-                  setSelectedAccountId(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 onBuyNow={handleBuyNow}
               />
@@ -412,9 +481,11 @@ export default function App() {
                 <button 
                   className="btn-gaming-primary"
                   onClick={() => {
-                    setActiveTab('home');
-                    setSelectedAccountId(null);
-                    window.location.hash = '';
+                    if (window.history.length > 1) {
+                      window.history.back();
+                    } else {
+                      handleNavigateTab('home');
+                    }
                   }}
                 >
                   Quay lại Showroom
@@ -438,14 +509,7 @@ export default function App() {
       <MobileNav 
         shopConfig={shopConfig}
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setSelectedAccountId(null);
-          if (tab === 'home') {
-            setSelectedCategoryId(null);
-            window.location.hash = '';
-          }
-        }}
+        setActiveTab={handleNavigateTab}
       />
 
       {/* 4. Floating Contact Widgets (Zalo, Facebook, Back-To-Top) */}

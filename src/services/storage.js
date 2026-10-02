@@ -291,12 +291,13 @@ export const storage = {
     const banners = this.getBanners();
     const newBanner = {
       ...banner,
-      id: `bn-${Date.now()}`,
-      order: banners.length + 1,
+      id: banner.id || `bn-${Date.now()}`,
+      order: banner.order || banners.length + 1,
       active: banner.active ?? true
     };
     const updated = [...banners, newBanner];
     this.saveBanners(updated);
+    supabaseService.saveBanner(newBanner, this.getShopConfig());
     return newBanner;
   },
 
@@ -304,13 +305,19 @@ export const storage = {
     const banners = this.getBanners();
     const updated = banners.map(b => (b.id === id ? { ...b, ...updatedFields } : b));
     this.saveBanners(updated);
+    const target = updated.find(b => b.id === id);
+    if (target) {
+      supabaseService.saveBanner(target, this.getShopConfig());
+    }
     return updated;
   },
 
   deleteBanner(id) {
+    const cleanId = String(id);
     const banners = this.getBanners();
-    const updated = banners.filter(b => b.id !== id);
+    const updated = banners.filter(b => String(b.id) !== cleanId);
     this.saveBanners(updated);
+    supabaseService.deleteBanner(cleanId, this.getShopConfig());
     return updated;
   },
 

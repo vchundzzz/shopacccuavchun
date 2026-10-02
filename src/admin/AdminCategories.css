@@ -46,7 +46,7 @@
 .cat-image-wrapper {
   position: relative;
   width: 100%;
-  height: 160px;
+  height: 115px;
   background: #f1f5f9;
   overflow: hidden;
 }
@@ -70,30 +70,30 @@
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  gap: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   background: #f8fafc;
 }
 
 .cat-image-badge-tag {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   background: #ffffff;
   color: #0284c7;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0f2fe;
 }
 
 .cat-body-content {
-  padding: 18px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
 }
 

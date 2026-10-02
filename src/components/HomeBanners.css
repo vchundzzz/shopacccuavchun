@@ -21,6 +21,95 @@
   object-fit: cover;
 }
 
+/* Slider Carousel Styles */
+.home-slider-container {
+  position: relative;
+  width: 100%;
+  background: #0f172a;
+  border-radius: 8px;
+}
+
+.home-slider-track {
+  display: flex;
+  width: 100%;
+}
+
+.home-slider-slide {
+  position: relative;
+  flex: 0 0 100%;
+}
+
+.home-slider-slide img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+.home-slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.home-slider-nav:hover {
+  background: rgba(15, 23, 42, 0.85);
+  transform: translateY(-50%) scale(1.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.home-slider-prev {
+  left: 12px;
+}
+
+.home-slider-next {
+  right: 12px;
+}
+
+.home-slider-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.home-slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.home-slider-dot.is-active {
+  width: 22px;
+  border-radius: 10px;
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+}
+
 /* 4 Quick Support Cards */
 .support-cards-grid {
   display: grid;

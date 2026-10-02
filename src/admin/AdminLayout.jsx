@@ -260,6 +260,8 @@ export default function AdminLayout({
 
           {activeAdminTab === 'banners' && (
             <AdminBanners 
+              banners={banners}
+              onUpdateBanners={onUpdateBanners}
               shopConfig={shopConfig} 
               onUpdateShopConfig={onUpdateShopConfig}
               categories={categories}

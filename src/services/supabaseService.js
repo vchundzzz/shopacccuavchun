@@ -43,9 +43,9 @@ export const supabaseService = {
     try {
       const [configRes, catRes, accRes, bannerRes] = await Promise.all([
         client.from('shop_config').select('*').limit(1),
-        client.from('categories').select('*').order('order', { ascending: true }),
+        client.from('categories').select('*').order('display_order', { ascending: true }),
         client.from('accounts').select('*').order('created_at', { ascending: false }),
-        client.from('banners').select('*').order('order', { ascending: true })
+        client.from('banners').select('*').order('display_order', { ascending: true })
       ]);
 
       const result = {};
@@ -267,6 +267,34 @@ export const supabaseService = {
       await client.from('accounts').delete().eq('id', String(id));
     } catch (e) {
       console.warn('Lỗi xóa acc trên Supabase:', e);
+    }
+  },
+
+  // Save/upsert a single banner to Supabase
+  async saveBanner(banner, shopConfig) {
+    const client = supabaseClient.getClient(shopConfig);
+    if (!client || !banner) return;
+    try {
+      await client.from('banners').upsert({
+        id: String(banner.id),
+        title: banner.title || '',
+        image: banner.image || '',
+        link: banner.link || '',
+        display_order: Number(banner.order || banner.display_order || 0)
+      });
+    } catch (e) {
+      console.warn('Lỗi lưu banner trên Supabase:', e);
+    }
+  },
+
+  // Delete a banner from Supabase
+  async deleteBanner(id, shopConfig) {
+    const client = supabaseClient.getClient(shopConfig);
+    if (!client) return;
+    try {
+      await client.from('banners').delete().eq('id', String(id));
+    } catch (e) {
+      console.warn('Lỗi xóa banner trên Supabase:', e);
     }
   }
 };
