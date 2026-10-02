@@ -1,6 +1,8 @@
 import { DEFAULT_SHOP_CONFIG, INITIAL_ACCOUNTS, INITIAL_BANNERS, INITIAL_CATEGORIES } from '../data/seedData';
 import dbData from '../data/db.json';
 import { cloudDatabase } from './cloudDatabase';
+import { supabaseService } from './supabaseService';
+import { supabaseClient } from './supabaseClient';
 
 const STORAGE_KEYS = {
   SHOP_CONFIG: 'shoptyseisei_config_v2',
@@ -22,7 +24,7 @@ const baseBanners = dbData?.banners || INITIAL_BANNERS;
 const baseCategories = dbData?.categories || INITIAL_CATEGORIES;
 
 export const storage = {
-  // Sync all current data to server disk (src/data/db.json) AND Cloud Database
+  // Sync all current data to server disk (src/data/db.json), Supabase SQL, AND Cloud Database (Firebase)
   async persistDataToDisk(override = {}) {
     const payload = {
       shopConfig: override.shopConfig || this.getShopConfig(),
@@ -33,6 +35,7 @@ export const storage = {
 
     let diskResult = { success: false };
     let cloudResult = { success: false };
+    let supabaseResult = { success: false };
 
     // 1. Save to local disk via Vite dev server middleware (if local)
     try {
@@ -48,22 +51,50 @@ export const storage = {
       // Offline / static build
     }
 
-    // 2. Save to Cloud Database (Firebase) if URL is configured
+    // 2. Save to Supabase (Cloud SQL) if configured
+    if (supabaseClient.isConfigured(payload.shopConfig)) {
+      supabaseResult = await supabaseService.saveAllData(payload, payload.shopConfig);
+    }
+
+    // 3. Save to Cloud Database (Firebase) if URL is configured
     const cloudUrl = cloudDatabase.getCloudUrl(payload.shopConfig);
     if (cloudUrl) {
       cloudResult = await cloudDatabase.saveShopData(cloudUrl, payload);
     }
 
     return {
-      success: diskResult.success || cloudResult.success,
+      success: diskResult.success || cloudResult.success || supabaseResult.success,
       disk: diskResult,
-      cloud: cloudResult
+      cloud: cloudResult,
+      supabase: supabaseResult
     };
   },
 
-  // Fetch the latest data from Cloud Database on page load
+  // Fetch the latest data from Cloud Database on page load (Supabase first, Firebase fallback)
   async fetchFromCloud() {
     const currentConfig = this.getShopConfig();
+
+    // 1. Try Supabase (PostgreSQL Cloud SQL) first if configured
+    if (supabaseClient.isConfigured(currentConfig)) {
+      const supabaseData = await supabaseService.fetchShopData(currentConfig);
+      if (supabaseData) {
+        if (supabaseData.shopConfig) {
+          localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(supabaseData.shopConfig));
+        }
+        if (Array.isArray(supabaseData.accounts)) {
+          localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(supabaseData.accounts));
+        }
+        if (Array.isArray(supabaseData.banners)) {
+          localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(supabaseData.banners));
+        }
+        if (Array.isArray(supabaseData.categories)) {
+          localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(supabaseData.categories));
+        }
+        return supabaseData;
+      }
+    }
+
+    // 2. Fallback to Firebase Realtime Database
     const cloudUrl = cloudDatabase.getCloudUrl(currentConfig);
     if (!cloudUrl) return null;
 
