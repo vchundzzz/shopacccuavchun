@@ -75,11 +75,14 @@ export default function AdminLayout({
 
   const handleSaveToDisk = async () => {
     try {
+      showToast('⏳ Đang đồng bộ dữ liệu lên đám mây...');
       const res = await storage.persistDataToDisk();
-      if (res && res.success) {
-        showToast('✅ Đã lưu toàn bộ Zalo & cấu hình vào file mã nguồn (src/data/db.json)! Giờ bạn có thể gửi thư mục code cho bạn bè.');
+      if (res && res.cloud?.success) {
+        showToast('✅ Đã đồng bộ dữ liệu lên Cloud Database thành công! Mọi khách truy cập sẽ thấy ngay.');
+      } else if (res && res.disk?.success) {
+        showToast('✅ Đã lưu vào file mã nguồn (src/data/db.json) và đám mây thành công!');
       } else {
-        showToast('Đã lưu dữ liệu vào hệ thống!');
+        showToast('✅ Đã lưu dữ liệu vào hệ thống thành công!');
       }
     } catch (e) {
       showToast('Đã lưu dữ liệu vào hệ thống!');

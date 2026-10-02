@@ -13,6 +13,7 @@ export const DEFAULT_SHOP_CONFIG = {
   zaloLQ: '0362481351',
   facebookLink: 'https://www.facebook.com/tyseiseiff/',
   workingHours: '24/7',
+  cloudDbUrl: 'https://shopaccvchun-default-rtdb.asia-southeast1.firebasedatabase.app',
   
   // Banner chính trên cùng
   mainBanner: 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg',

@@ -23,12 +23,12 @@ const baseCategories = dbData?.categories || INITIAL_CATEGORIES;
 
 export const storage = {
   // Sync all current data to server disk (src/data/db.json) AND Cloud Database
-  async persistDataToDisk() {
+  async persistDataToDisk(override = {}) {
     const payload = {
-      shopConfig: this.getShopConfig(),
-      accounts: this.getAccounts(),
-      banners: this.getBanners(),
-      categories: this.getCategories()
+      shopConfig: override.shopConfig || this.getShopConfig(),
+      accounts: override.accounts || this.getAccounts(),
+      banners: override.banners || this.getBanners(),
+      categories: override.categories || this.getCategories()
     };
 
     let diskResult = { success: false };
@@ -41,7 +41,9 @@ export const storage = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      diskResult = await res.json();
+      if (res.ok) {
+        diskResult = await res.json();
+      }
     } catch (e) {
       // Offline / static build
     }
@@ -69,6 +71,15 @@ export const storage = {
     if (cloudData && typeof cloudData === 'object') {
       // Cache cloud data into localStorage so next visit is instant
       if (cloudData.shopConfig) {
+        if (cloudData.shopConfig.blackLogo?.startsWith('data:image/jpeg')) {
+          cloudData.shopConfig.blackLogo = baseShopConfig.blackLogo;
+        }
+        if (cloudData.shopConfig.whiteLogo?.startsWith('data:image/jpeg')) {
+          cloudData.shopConfig.whiteLogo = baseShopConfig.whiteLogo;
+        }
+        if (cloudData.shopConfig.avatar?.startsWith('data:image/jpeg')) {
+          cloudData.shopConfig.avatar = baseShopConfig.avatar;
+        }
         localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(cloudData.shopConfig));
       }
       if (Array.isArray(cloudData.accounts)) {
@@ -111,16 +122,16 @@ export const storage = {
       if (data) {
         const parsed = JSON.parse(data);
         let updated = false;
-        // Migrate old shoptyseisei logos and branding to SHOPVANCHUNG
-        if (!parsed.blackLogo || parsed.blackLogo.includes('shoptyseisei.net/uploads')) {
+        // Migrate old shoptyseisei logos and branding to SHOPVANCHUNG, and strip opaque JPEG logos
+        if (!parsed.blackLogo || parsed.blackLogo.includes('shoptyseisei.net/uploads') || parsed.blackLogo.startsWith('data:image/jpeg')) {
           parsed.blackLogo = baseShopConfig.blackLogo;
           updated = true;
         }
-        if (!parsed.whiteLogo || parsed.whiteLogo.includes('shoptyseisei.net/uploads')) {
+        if (!parsed.whiteLogo || parsed.whiteLogo.includes('shoptyseisei.net/uploads') || parsed.whiteLogo.startsWith('data:image/jpeg')) {
           parsed.whiteLogo = baseShopConfig.whiteLogo;
           updated = true;
         }
-        if (!parsed.avatar || parsed.avatar.includes('shoptyseisei.net/uploads')) {
+        if (!parsed.avatar || parsed.avatar.includes('shoptyseisei.net/uploads') || parsed.avatar.startsWith('data:image/jpeg')) {
           parsed.avatar = baseShopConfig.avatar;
           updated = true;
         }
@@ -144,7 +155,7 @@ export const storage = {
   saveShopConfig(config) {
     try {
       localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(config));
-      this.persistDataToDisk();
+      return this.persistDataToDisk({ shopConfig: config });
     } catch (e) {
       console.error('Error saving shop config to localStorage', e);
     }
@@ -163,15 +174,7 @@ export const storage = {
       const data = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
       if (data) {
         const parsed = JSON.parse(data);
-        const filtered = parsed.filter(a => a.game !== 'fcmobile');
-        const has87898 = filtered.some(a => a.id === '87898' || a.code === '87898');
-        if (!has87898) {
-          const freshAccounts = baseAccounts.filter(a => a.game !== 'fcmobile');
-          const merged = [...freshAccounts.slice(0, 6), ...filtered];
-          this.saveAccounts(merged);
-          return merged;
-        }
-        return filtered;
+        return parsed.filter(a => a.game !== 'fcmobile');
       }
     } catch (e) {
       console.error('Error reading accounts from localStorage', e);
@@ -184,7 +187,7 @@ export const storage = {
   saveAccounts(accounts) {
     try {
       localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
-      this.persistDataToDisk();
+      return this.persistDataToDisk({ accounts });
     } catch (e) {
       console.error('Error saving accounts to localStorage', e);
     }
@@ -245,7 +248,7 @@ export const storage = {
   saveBanners(banners) {
     try {
       localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(banners));
-      this.persistDataToDisk();
+      return this.persistDataToDisk({ banners });
     } catch (e) {
       console.error('Error saving banners', e);
     }
@@ -297,7 +300,7 @@ export const storage = {
   saveCategories(categories) {
     try {
       localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-      this.persistDataToDisk();
+      return this.persistDataToDisk({ categories });
     } catch (e) {
       console.error('Error saving categories', e);
     }
@@ -385,10 +388,3 @@ export const storage = {
     };
   }
 };
-
-// Initial background sync to disk if in browser
-if (typeof window !== 'undefined') {
-  setTimeout(() => {
-    storage.persistDataToDisk();
-  }, 1000);
-}

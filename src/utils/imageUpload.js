@@ -47,9 +47,13 @@ export const compressAndReadFile = (file, maxWidth = 1000, maxHeight = 1000, qua
         // Vẽ ảnh lên canvas đã resize
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Chuyển canvas thành base64 JPEG với quality tối ưu
+        // Kiểm tra nếu là ảnh có độ trong suốt (PNG, WebP, SVG) thì giữ nguyên định dạng để không bị đen nền
+        const isTransparentFormat = file.type === 'image/png' || file.type === 'image/webp' || file.type === 'image/svg+xml';
+
         try {
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          const compressedDataUrl = isTransparentFormat
+            ? canvas.toDataURL(file.type === 'image/webp' ? 'image/webp' : 'image/png')
+            : canvas.toDataURL('image/jpeg', quality);
           resolve(compressedDataUrl);
         } catch (e) {
           // Fallback sang định dạng ban đầu

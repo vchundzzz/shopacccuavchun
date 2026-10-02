@@ -72,16 +72,21 @@ export default function App() {
     }
   }, [isGrayscale]);
 
-  // Load latest data from Cloud Database on startup (if connected)
+  // Load latest data from Cloud Database on startup & window focus (auto-sync for all visitors)
   useEffect(() => {
-    storage.fetchFromCloud().then(cloudData => {
-      if (cloudData) {
-        if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
-        if (Array.isArray(cloudData.accounts)) setAccounts(cloudData.accounts);
-        if (Array.isArray(cloudData.banners)) setBanners(cloudData.banners);
-        if (Array.isArray(cloudData.categories)) setCategories(cloudData.categories);
-      }
-    });
+    const syncData = () => {
+      storage.fetchFromCloud().then(cloudData => {
+        if (cloudData) {
+          if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
+          if (Array.isArray(cloudData.accounts)) setAccounts(cloudData.accounts);
+          if (Array.isArray(cloudData.banners)) setBanners(cloudData.banners);
+          if (Array.isArray(cloudData.categories)) setCategories(cloudData.categories);
+        }
+      });
+    };
+    syncData();
+    window.addEventListener('focus', syncData);
+    return () => window.removeEventListener('focus', syncData);
   }, []);
 
   // Listen to hash change (e.g. when typing #admin or navigating to #/tai-khoan/:id)
@@ -266,6 +271,9 @@ export default function App() {
         <AdminLogin 
           onLoginSuccess={() => setIsAdminAuthenticated(true)}
           onBackToShop={() => {
+            if (window.location.pathname === '/admin') {
+              window.history.pushState(null, '', '/');
+            }
             window.location.hash = '';
             setIsAdminRoute(false);
           }}
@@ -285,12 +293,18 @@ export default function App() {
         onUpdateShopConfig={handleUpdateShopConfig}
         onResetData={handleResetData}
         onExitAdmin={() => {
+          if (window.location.pathname === '/admin') {
+            window.history.pushState(null, '', '/');
+          }
           window.location.hash = '';
           setIsAdminRoute(false);
         }}
         onLogout={() => {
           storage.logoutAdmin();
           setIsAdminAuthenticated(false);
+          if (window.location.pathname === '/admin') {
+            window.history.pushState(null, '', '/');
+          }
           window.location.hash = '';
           setIsAdminRoute(false);
         }}

@@ -2,6 +2,7 @@
 // Allows real-time live synchronization across all visitors and custom domains without any servers
 
 const CLOUD_CONFIG_KEY = 'shop_cloud_db_url_v1';
+export const DEFAULT_FIREBASE_URL = 'https://shopaccvchun-default-rtdb.asia-southeast1.firebasedatabase.app';
 
 export const cloudDatabase = {
   // Normalize Firebase URL to ensure it has https:// and no trailing slash or /shopData.json
@@ -29,7 +30,7 @@ export const cloudDatabase = {
     } catch (e) {
       // ignore
     }
-    return '';
+    return DEFAULT_FIREBASE_URL;
   },
 
   // Save Cloud DB URL
@@ -90,13 +91,13 @@ export const cloudDatabase = {
 
   // Fetch all shop data from the Cloud Database
   async fetchShopData(rawUrl) {
-    const baseUrl = this.normalizeUrl(rawUrl);
+    const baseUrl = this.normalizeUrl(rawUrl) || DEFAULT_FIREBASE_URL;
     if (!baseUrl) return null;
 
-    const dataUrl = `${baseUrl}/shopData.json`;
+    const dataUrl = `${baseUrl}/shopData.json?t=${Date.now()}`;
 
     try {
-      const res = await fetch(dataUrl);
+      const res = await fetch(dataUrl, { cache: 'no-store' });
       if (!res.ok) return null;
       const data = await res.json();
       if (data && typeof data === 'object') {

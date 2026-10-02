@@ -38,7 +38,7 @@ export default function Navbar({
             title="Về Trang Chủ"
           >
             <img 
-              src={shopConfig.blackLogo || shopConfig.whiteLogo || "/images/logo-shopvanchung.png"} 
+              src={(isDark ? (shopConfig.whiteLogo || shopConfig.blackLogo) : (shopConfig.blackLogo || shopConfig.whiteLogo)) || "/images/logo-shopvanchung.png"} 
               alt={shopConfig.shopName || 'SHOPVANCHUNG'} 
             />
           </div>
