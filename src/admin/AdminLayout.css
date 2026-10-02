@@ -1,9 +1,13 @@
-/* Admin Layout Styles */
+/* ========================================================
+   ADMIN MODERN LIGHT THEME (SLEEK & PROFESSIONAL)
+   ======================================================== */
+
 .admin-container {
   display: flex;
   min-height: 100vh;
-  background: #090a10;
-  color: #f1f5f9;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Toast */
@@ -11,17 +15,19 @@
   position: fixed;
   top: 24px;
   right: 24px;
-  background: #141724;
+  background: #ffffff;
   border: 1px solid #10b981;
-  color: #fff;
+  color: #0f172a;
   padding: 12px 20px;
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(16, 185, 129, 0.15);
   display: flex;
   align-items: center;
   gap: 10px;
   z-index: 3000;
   animation: slideInDown 0.3s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 @keyframes slideInDown {
@@ -32,11 +38,13 @@
 /* Sidebar */
 .admin-sidebar {
   width: 260px;
-  background: #0e111a;
-  border-right: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02);
+  transition: width 0.2s ease;
 }
 
 @media (max-width: 768px) {
@@ -46,8 +54,9 @@
 }
 
 .admin-sidebar-header {
-  padding: 20px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
 }
 
 .admin-logo {
@@ -70,20 +79,32 @@
 }
 
 .admin-logo-img {
-  max-height: 40px;
-  max-width: 120px;
+  max-height: 42px;
+  max-width: 130px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(255, 185, 0, 0.65)) 
-          drop-shadow(0 0 20px rgba(255, 100, 0, 0.35)) 
-          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
   transition: all 0.3s ease;
 }
 
 .admin-sidebar-logo-brand:hover .admin-logo-img {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 16px rgba(255, 205, 0, 0.9)) 
-          drop-shadow(0 0 30px rgba(255, 120, 0, 0.55));
+  transform: scale(1.04);
+}
+
+.logo-text-wrap h1 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.logo-text-wrap span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 @media (max-width: 768px) {
@@ -93,7 +114,7 @@
 }
 
 .admin-sidebar-nav {
-  padding: 16px 10px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -105,13 +126,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  border-radius: 9px;
   background: transparent;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.9rem;
+  font-weight: 500;
   text-align: left;
-  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
   position: relative;
 }
 
@@ -122,62 +146,82 @@
 }
 
 .admin-nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .admin-nav-item.active {
-  background: rgba(255, 87, 34, 0.15);
-  color: #ff7043;
-  border: 1px solid rgba(255, 87, 34, 0.3);
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 700;
+  border-color: #c7d2fe;
 }
 
 .nav-badge {
   margin-left: auto;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 9999px;
   font-size: 0.72rem;
-  color: #cbd5e1;
+  font-weight: 700;
+  color: #475569;
+}
+
+.admin-nav-item.active .nav-badge {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #ffffff;
 }
 
 .admin-sidebar-footer {
   padding: 16px 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: #ffffff;
 }
 
 .admin-reset-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #f87171;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
+
 .admin-reset-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
 .admin-logout-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
+
 .admin-logout-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
 }
 
 @media (max-width: 768px) {
@@ -193,15 +237,17 @@
   flex-direction: column;
   min-width: 0;
   overflow-y: auto;
+  background: #f8fafc;
 }
 
 .admin-top-header {
-  padding: 16px 24px;
-  background: #0d1017;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .admin-breadcrumb {
@@ -209,33 +255,59 @@
   align-items: center;
   gap: 8px;
   font-size: 0.88rem;
-  color: var(--text-dim);
+  color: #64748b;
 }
 
 .admin-breadcrumb strong {
-  color: #fff;
-  font-family: var(--font-gaming);
-  font-size: 1rem;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .btn-sm {
-  padding: 6px 14px;
+  padding: 8px 16px;
   font-size: 0.85rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-gaming-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #059669;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.btn-gaming-primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
 .admin-view-content {
-  padding: 24px;
+  padding: 28px;
   flex: 1;
 }
 
-/* Modal Overlay & Containers for Admin */
+/* Modals */
 .modal-overlay {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(9, 10, 16, 0.78);
-  backdrop-filter: blur(6px);
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -252,11 +324,11 @@
 .modal-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  background: #111420;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  max-width: 620px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   animation: adminModalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
@@ -264,14 +336,14 @@
 }
 
 @keyframes adminModalScale {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .detail-modal-header {
-  padding: 16px 20px;
-  background: #161a29;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -279,18 +351,18 @@
 
 .detail-modal-header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .modal-close-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,8 +371,7 @@
 }
 
 .modal-close-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: #fee2e2;
   color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: #fca5a5;
 }
-

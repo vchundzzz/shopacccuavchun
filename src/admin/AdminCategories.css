@@ -1,82 +1,54 @@
-/* =========================================================
-   ADMIN CATEGORIES STYLES
-   Visual live preview of category showcase cards & image uploader
-   ========================================================= */
+/* ========================================================
+   ADMIN CATEGORIES VIEW - MODERN LIGHT THEME
+   ======================================================== */
 
 .admin-categories-view {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-.cat-group-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #0f121d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.cat-group-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 12px;
-}
-
-.cat-group-header h4 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.5px;
-}
-
-.cat-grid {
+.categories-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 18px;
+  gap: 20px;
 }
 
 @media (min-width: 640px) {
-  .cat-grid {
+  .categories-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .cat-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* Category Item Card */
 .cat-item-card {
-  background: #141724;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .cat-item-card:hover {
-  border-color: #1b45ee;
-  box-shadow: 0 8px 24px rgba(27, 69, 238, 0.15);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
-/* Category Image Preview Box */
-.cat-image-preview-wrap {
+.cat-image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  background: #090a10;
+  height: 160px;
+  background: #f1f5f9;
   overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cat-preview-img {
@@ -87,7 +59,7 @@
 }
 
 .cat-item-card:hover .cat-preview-img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .cat-no-image-placeholder {
@@ -97,144 +69,67 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: #94a3b8;
   gap: 6px;
-  font-size: 12px;
-  background: #181b2a;
+  font-size: 13px;
+  background: #f8fafc;
 }
 
 .cat-image-badge-tag {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(4px);
-  color: #38bdf8;
+  top: 10px;
+  left: 10px;
+  background: #ffffff;
+  color: #0284c7;
   font-size: 11px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0f2fe;
 }
 
-/* Category Card Body */
 .cat-body-content {
-  padding: 14px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
 }
 
 .cat-name-heading {
-  font-size: 15px;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin: 0;
   line-height: 1.3;
 }
 
 .cat-price-info {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 0.85rem;
+  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .cat-price-info strong {
-  color: #f59e0b;
+  color: #ea580c;
   font-weight: 700;
 }
 
-/* Quick Change Image Action */
-.cat-image-action-box {
-  background: #191d2d;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cat-image-action-box .image-upload-dropzone {
-  min-height: 100px;
-}
-
-/* Buttons */
-.cat-card-actions {
+.cat-actions-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
   margin-top: auto;
-  padding-top: 6px;
 }
 
-.btn-cat-edit {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: rgba(27, 69, 238, 0.15);
-  border: 1px solid rgba(27, 69, 238, 0.4);
-  color: #60a5fa;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-cat-edit:hover {
-  background: #1b45ee;
-  color: #ffffff;
-}
-
-.btn-cat-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-cat-delete:hover {
-  background: #ef4444;
-  color: #ffffff;
-}
-
-/* Quick Image Changer Drawer */
-.cat-quick-upload-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.btn-save-cat-img {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #10b981;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.btn-save-cat-img:hover {
-  background: #059669;
+.cat-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
 }

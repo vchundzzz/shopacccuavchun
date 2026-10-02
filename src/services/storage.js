@@ -256,9 +256,11 @@ export const storage = {
   },
 
   deleteAccount(id) {
+    const cleanId = String(id);
     const accounts = this.getAccounts();
-    const updated = accounts.filter(acc => acc.id !== id && acc.code !== id);
+    const updated = accounts.filter(acc => String(acc.id) !== cleanId && String(acc.code) !== cleanId);
     this.saveAccounts(updated);
+    supabaseService.deleteAccount(cleanId, this.getShopConfig());
     return updated;
   },
 

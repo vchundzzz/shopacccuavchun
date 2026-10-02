@@ -1,24 +1,27 @@
-/* Admin Login Screen Styles */
+/* ========================================================
+   ADMIN LOGIN SCREEN - MODERN LIGHT THEME
+   ======================================================== */
+
 .admin-login-screen {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: #07080c;
+  background-color: #f8fafc;
   background-image: 
-    radial-gradient(circle at 50% 30%, rgba(255, 87, 34, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%);
 }
 
 .login-card-container {
   width: 100%;
   max-width: 440px;
-  background: #111420;
-  border: 1px solid rgba(255, 87, 34, 0.35);
-  border-radius: var(--radius-lg);
-  padding: 32px 28px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 87, 34, 0.15);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -27,17 +30,22 @@
 
 .back-to-shop-btn {
   background: transparent;
-  color: var(--text-muted);
+  color: #64748b;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  font-weight: 600;
   padding: 0;
   margin-bottom: -6px;
   width: fit-content;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
+
 .back-to-shop-btn:hover {
-  color: #ff9800;
+  color: #4f46e5;
   transform: translateX(-3px);
 }
 
@@ -49,44 +57,32 @@
   gap: 8px;
 }
 
-.login-icon-box {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.2) 0%, rgba(255, 143, 0, 0.2) 100%);
-  border: 1px solid rgba(255, 87, 34, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-.lock-icon {
-  color: #ff7043;
-}
-
 .login-card-header h2 {
   font-size: 1.25rem;
-  color: #fff;
-  letter-spacing: 0.8px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 .login-card-header p {
-  font-size: 0.82rem;
-  color: var(--text-dim);
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
 }
 
 /* Error Alert */
 .login-error-alert {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #f87171;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   padding: 10px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* Form */
@@ -103,9 +99,9 @@
 }
 
 .login-input-group label {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-size: 0.85rem;
+  color: #334155;
+  font-weight: 700;
 }
 
 .input-with-icon {
@@ -117,89 +113,91 @@
 .input-icon {
   position: absolute;
   left: 12px;
-  color: var(--text-dim);
+  color: #94a3b8;
   pointer-events: none;
 }
 
 .input-with-icon input {
   width: 100%;
-  background: #191c28;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #fff;
-  padding: 11px 40px 11px 38px;
-  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 10px 14px 10px 40px;
+  border-radius: 8px;
   font-size: 0.9rem;
   outline: none;
-  transition: all var(--transition-fast);
+  transition: all 0.15s ease;
 }
 
 .input-with-icon input:focus {
-  border-color: var(--ff-primary);
-  box-shadow: 0 0 12px rgba(255, 87, 34, 0.3);
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-.toggle-eye-btn {
+.toggle-password-btn {
   position: absolute;
-  right: 10px;
+  right: 12px;
   background: transparent;
-  color: var(--text-dim);
-  padding: 4px;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
-.toggle-eye-btn:hover {
-  color: #fff;
+
+.toggle-password-btn:hover {
+  color: #475569;
 }
 
 .login-options-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  color: #475569;
 }
 
-.remember-checkbox {
+.remember-me {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
+  gap: 8px;
   cursor: pointer;
 }
-.remember-checkbox input {
-  accent-color: var(--ff-primary);
+
+.remember-me input[type="checkbox"] {
+  accent-color: #4f46e5;
+  cursor: pointer;
 }
 
 .login-submit-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  border: 1px solid #4f46e5;
+  color: #ffffff;
   padding: 12px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+  transition: all 0.15s ease;
   margin-top: 4px;
 }
 
-/* Footer Hint */
-.credentials-hint-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
+.login-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  transform: translateY(-1px);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-footer-hint {
   text-align: center;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
-
-.credentials-hint-box strong {
-  display: block;
-  color: #ff9800;
-  margin-bottom: 2px;
-}
-
-.credentials-hint-box code {
-  color: #38bdf8;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-.credentials-hint-box small {
-  display: block;
-  margin-top: 4px;
-  color: var(--text-dim);
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 8px;
 }

@@ -1,4 +1,7 @@
-/* Cloud Database Management Styles */
+/* ========================================================
+   ADMIN CLOUD DB VIEW - MODERN LIGHT THEME
+   ======================================================== */
+
 .admin-cloud-view {
   padding: 1.5rem;
   max-width: 1400px;
@@ -13,35 +16,36 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1.25rem;
-  background: #111420;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   padding: 20px 24px;
   border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .cloud-icon-box {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #0284c7;
 }
 
 .cloud-header-card h2 {
   font-size: 1.45rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.02em;
 }
 
 .cloud-header-card p {
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #64748b;
+  font-size: 0.88rem;
   margin-top: 0.25rem;
   margin-bottom: 0;
 }
@@ -53,22 +57,63 @@
   gap: 0.5rem;
   padding: 8px 16px;
   border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .status-online {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
 }
 
 .status-offline {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+/* Tab Bar */
+.db-tab-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.db-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.db-tab-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.db-tab-btn.active.tab-supabase {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.db-tab-btn.active.tab-firebase {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
 }
 
 /* Grid Layout */
@@ -92,154 +137,109 @@
 }
 
 .card-desc {
-  font-size: 0.875rem;
-  color: #94a3b8;
+  font-size: 0.88rem;
+  color: #475569;
   line-height: 1.6;
   margin-bottom: 1.25rem;
 }
 
-/* Feedback Box */
-.test-feedback-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 14px 16px;
-  border-radius: 10px;
-  margin-bottom: 1.25rem;
-  font-size: 0.85rem;
-}
-
-.feedback-success {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #34d399;
-}
-
-.feedback-error {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #f87171;
-}
-
-.test-feedback-box p {
-  margin: 4px 0 0 0;
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-.spin-anim {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  100% { transform: rotate(360deg); }
-}
-
-/* Steps Explanation List */
-.steps-explain-list {
+.form-group-cloud {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 8px;
+  margin-bottom: 1.25rem;
 }
 
-.explain-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 12px 14px;
+.form-group-cloud label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.cloud-input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 11px 14px;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-family: inherit;
+  width: 100%;
+  transition: all 0.15s ease;
 }
 
-.step-num-badge {
-  width: 28px;
-  height: 28px;
+.cloud-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.field-tip {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.action-buttons-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+/* Tutorial Box */
+.tutorial-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.tutorial-step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #06b6d4, #3b82f6);
-  color: #ffffff;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #4f46e5;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.explain-item strong {
-  font-size: 0.9rem;
-  color: #f1f5f9;
-}
-
-.explain-item p {
-  font-size: 0.825rem;
-  color: #94a3b8;
-  margin: 4px 0 0 0;
-  line-height: 1.5;
-}
-
-/* Tutorial Card */
-.tutorial-card {
-  background: linear-gradient(180deg, #111420 0%, #161b2e 100%);
-  border-color: rgba(59, 130, 246, 0.25);
-}
-
-.tutorial-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.tutorial-step-box {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.step-tag {
-  display: inline-block;
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.tutorial-step-box h4 {
+.step-content h4 {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #ffffff;
-  margin: 0 0 0.4rem 0;
+  color: #0f172a;
+  margin: 0 0 6px 0;
 }
 
-.tutorial-step-box p {
-  font-size: 0.825rem;
-  color: #cbd5e1;
-  margin: 0;
+.step-content p {
+  font-size: 0.85rem;
+  color: #475569;
   line-height: 1.5;
+  margin: 0;
 }
 
-.firebase-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.8rem;
-  padding: 6px 14px;
-  border-radius: 6px;
-  text-decoration: none;
-  margin-top: 0.6rem;
-  transition: all 0.2s ease;
-}
-
-.firebase-link-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+/* Code Snippet Box */
+.code-preview-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #1e293b;
+  overflow-x: auto;
+  margin-top: 8px;
 }

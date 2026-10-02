@@ -75,6 +75,8 @@ export default function App() {
   // Load latest data from Cloud Database on startup & window focus (auto-sync for all visitors)
   useEffect(() => {
     const syncData = () => {
+      // Never overwrite while the user is actively working inside Admin!
+      if (isAdminRoute) return;
       storage.fetchFromCloud().then(cloudData => {
         if (cloudData) {
           if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
@@ -87,7 +89,7 @@ export default function App() {
     syncData();
     window.addEventListener('focus', syncData);
     return () => window.removeEventListener('focus', syncData);
-  }, []);
+  }, [isAdminRoute]);
 
   // Listen to hash change (e.g. when typing #admin or navigating to #/tai-khoan/:id)
   useEffect(() => {

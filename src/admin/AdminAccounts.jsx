@@ -22,6 +22,7 @@ import {
 import ImageFileInput from './ImageFileInput';
 import { processMultipleFiles } from '../utils/imageUpload';
 import { formatVND } from '../components/AccountCard';
+import { storage } from '../services/storage';
 import './AdminAccounts.css';
 
 export default function AdminAccounts({ accounts, categories, onUpdateAccounts, showToast, onExitAdmin }) {
@@ -154,12 +155,24 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     showToast(`Đã ${nextHidden ? 'ẩn' : 'hiện'} tài khoản ${acc.code || acc.id}`);
   };
 
-  // Delete Account
+  // Delete Account - 1 hit instant delete
   const handleDeleteAccount = (acc) => {
-    if (window.confirm(`Bạn có chắc muốn xóa tài khoản ${acc.code || acc.id} khỏi hệ thống?`)) {
-      const updated = accounts.filter(a => a.id !== acc.id && a.code !== acc.code);
+    const accId = String(acc.id || acc.code || '');
+    const accCode = String(acc.code || acc.id || '');
+    if (window.confirm(`Bạn có chắc muốn xóa tài khoản ${accCode} khỏi hệ thống?`)) {
+      const updated = accounts.filter(a => {
+        const id = String(a.id || a.code || '');
+        const code = String(a.code || a.id || '');
+        return id !== accId && code !== accCode && id !== accCode && code !== accId;
+      });
       onUpdateAccounts(updated);
-      showToast(`Đã xóa tài khoản ${acc.code || acc.id}`);
+      showToast(`Đã xóa vĩnh viễn tài khoản ${accCode}!`);
+      try {
+        if (accId) storage.deleteAccount(accId);
+        if (accCode && accCode !== accId) storage.deleteAccount(accCode);
+      } catch (err) {
+        console.warn('Lỗi khi gọi storage.deleteAccount:', err);
+      }
     }
   };
 

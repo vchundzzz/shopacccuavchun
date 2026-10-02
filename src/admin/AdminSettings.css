@@ -1,3 +1,7 @@
+/* ========================================================
+   ADMIN SETTINGS VIEW - MODERN LIGHT THEME
+   ======================================================== */
+
 .admin-settings-view {
   padding: 1.5rem;
   max-width: 1200px;
@@ -12,22 +16,24 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
-  background: #111420;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 18px 24px;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .settings-view-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  color: #fff;
+  color: #0f172a;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .settings-view-header p {
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #64748b;
+  font-size: 0.88rem;
   margin-top: 0.25rem;
 }
 
@@ -38,11 +44,11 @@
 }
 
 .settings-card {
-  background: #111420;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .card-header-badge {
@@ -51,13 +57,13 @@
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .card-header-badge h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0;
 }
 
@@ -67,8 +73,15 @@
 }
 
 .preview-logo-box {
-  border: 1px dashed #475569;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
   transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.preview-logo-box:hover {
+  border-color: #4f46e5;
+  background: #f1f5f9;
 }
 
 .card-quick-save-bar {
@@ -76,7 +89,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #f1f5f9;
 }
