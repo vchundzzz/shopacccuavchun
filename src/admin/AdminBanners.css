@@ -132,18 +132,19 @@
 .admin-floating-bottom-bar {
   position: fixed;
   bottom: 0;
-  left: 260px;
+  left: 270px;
   right: 0;
-  background: #0d1017;
-  border-top: 2px solid #ff5722;
+  background: rgba(13, 16, 23, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 87, 34, 0.5);
   padding: 14px 28px;
   z-index: 1000;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 820px) {
   .admin-floating-bottom-bar {
-    left: 70px;
+    left: 74px;
     padding: 10px 14px;
   }
 }

@@ -144,11 +144,16 @@ export default function AdminLayout({
             <div className="logo-text-wrap">
               <span className="logo-title">QUẢN TRỊ VIÊN</span>
               <span className="logo-subtitle">{shopConfig?.shopName || 'SHOPVANCHUNG'}</span>
+              <div className="admin-status-indicator">
+                <span className="status-dot-pulse"></span>
+                <span>Hệ thống trực tuyến</span>
+              </div>
             </div>
           </div>
         </div>
 
         <nav className="admin-sidebar-nav">
+          <span className="admin-nav-category">TỔNG QUAN</span>
           <button 
             className={`admin-nav-item ${activeAdminTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveAdminTab('dashboard')}
@@ -157,6 +162,7 @@ export default function AdminLayout({
             <span>Tổng Quan (Dashboard)</span>
           </button>
 
+          <span className="admin-nav-category">QUẢN LÝ KHO HÀNG</span>
           <button 
             className={`admin-nav-item ${activeAdminTab === 'accounts' ? 'active' : ''}`}
             onClick={() => setActiveAdminTab('accounts')}
@@ -164,15 +170,6 @@ export default function AdminLayout({
             <Users size={18} />
             <span>Quản Lý Tài Khoản</span>
             <span className="nav-badge">{accounts.length}</span>
-          </button>
-
-          <button 
-            className={`admin-nav-item ${activeAdminTab === 'banners' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('banners')}
-          >
-            <Image size={18} />
-            <span>Quản Lý Banners</span>
-            <span className="nav-badge">{banners.length}</span>
           </button>
 
           <button 
@@ -184,6 +181,16 @@ export default function AdminLayout({
             <span className="nav-badge">{categories.length}</span>
           </button>
 
+          <span className="admin-nav-category">GIAO DIỆN & TRANG CHỦ</span>
+          <button 
+            className={`admin-nav-item ${activeAdminTab === 'banners' ? 'active' : ''}`}
+            onClick={() => setActiveAdminTab('banners')}
+          >
+            <Image size={18} />
+            <span>Quản Lý Banners</span>
+            <span className="nav-badge">{banners.length}</span>
+          </button>
+
           <button 
             className={`admin-nav-item ${activeAdminTab === 'announcement' ? 'active' : ''}`}
             onClick={() => setActiveAdminTab('announcement')}
@@ -193,6 +200,7 @@ export default function AdminLayout({
             <span className="nav-badge" style={{ background: '#ef4444', color: '#fff' }}>POPUP</span>
           </button>
 
+          <span className="admin-nav-category">HỆ THỐNG & CẤU HÌNH</span>
           <button 
             className={`admin-nav-item ${activeAdminTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveAdminTab('settings')}
@@ -228,40 +236,58 @@ export default function AdminLayout({
       <main className="admin-main">
         {/* Top Header */}
         <header className="admin-top-header">
-          <div className="admin-breadcrumb">
-            <span>Hệ Thống Quản Trị</span>
-            <span>/</span>
-            <strong>
-              {activeAdminTab === 'dashboard' && 'Dashboard Thống Kê'}
-              {activeAdminTab === 'accounts' && 'Quản Lý Kho Tài Khoản Game'}
-              {activeAdminTab === 'banners' && 'Quản Lý Banner Quảng Cáo Toàn Trang'}
-              {activeAdminTab === 'categories' && 'Quản Lý Danh Mục & Khoảng Giá'}
-              {activeAdminTab === 'announcement' && 'Quản Lý Thông Báo Popup Trang Chủ'}
-              {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Logo'}
-              {activeAdminTab === 'cloud' && 'Cấu Hình Cơ Sở Dữ Liệu Đám Mây (Cloud Database)'}
-            </strong>
+          <div className="admin-breadcrumb-box">
+            <div className="admin-breadcrumb-icon">
+              {activeAdminTab === 'dashboard' && <LayoutDashboard size={18} />}
+              {activeAdminTab === 'accounts' && <Users size={18} />}
+              {activeAdminTab === 'banners' && <Image size={18} />}
+              {activeAdminTab === 'categories' && <FolderTree size={18} />}
+              {activeAdminTab === 'announcement' && <Bell size={18} />}
+              {activeAdminTab === 'settings' && <SettingsIcon size={18} />}
+              {activeAdminTab === 'cloud' && <Cloud size={18} />}
+            </div>
+            <div className="admin-breadcrumb-text">
+              <span className="admin-breadcrumb-path">SHOPVANCHUNG / QUẢN TRỊ VIÊN</span>
+              <strong className="admin-breadcrumb-title">
+                {activeAdminTab === 'dashboard' && 'Dashboard Thống Kê & Tổng Quan'}
+                {activeAdminTab === 'accounts' && 'Quản Lý Kho Tài Khoản Game'}
+                {activeAdminTab === 'banners' && 'Quản Lý Banner Quảng Cáo Toàn Trang'}
+                {activeAdminTab === 'categories' && 'Quản Lý Danh Mục & Khoảng Giá'}
+                {activeAdminTab === 'announcement' && 'Quản Lý Thông Báo Popup Trang Chủ'}
+                {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Logo'}
+                {activeAdminTab === 'cloud' && 'Cơ Sở Dữ Liệu Đám Mây (Cloud Database)'}
+              </strong>
+            </div>
           </div>
 
           <div className="admin-header-actions">
+            <div className="admin-status-pill pill-green" title="Cloud DB đang kích hoạt và sẵn sàng">
+              <span className="status-dot-pulse"></span>
+              <span>Cloud DB: Online</span>
+            </div>
+            <div className="admin-status-pill" title="Tổng số tài khoản trong kho">
+              <Users size={13} />
+              <span>{accounts.length} Acc</span>
+            </div>
+
             <button 
-              className="btn-gaming-primary btn-sm" 
+              className="btn-header-action btn-header-save" 
               onClick={handleSaveToDisk} 
               title="Lưu tất cả dữ liệu (Zalo, acc, banner, popup) trực tiếp vào file mã nguồn để khi gửi code cho bạn bè họ sẽ thấy đầy đủ thông tin mới nhất"
-              style={{ background: 'linear-gradient(135deg, #10b981, #059669)', borderColor: '#10b981' }}
             >
-              <Save size={14} />
-              <span>Lưu Ra File Cho Bạn Bè</span>
+              <Save size={15} />
+              <span>Lưu Dữ Liệu</span>
             </button>
-            <button className="btn-gaming-success btn-sm" onClick={onExitAdmin} title="Mở trang chủ shop để xem các thay đổi">
-              <ExternalLink size={14} />
-              <span>Xem Website Shop</span>
+            <button className="btn-header-action btn-header-shop" onClick={onExitAdmin} title="Mở trang chủ shop để xem các thay đổi">
+              <ExternalLink size={15} />
+              <span>Xem Web Shop</span>
             </button>
-            <button className="btn-gaming-outline btn-sm" onClick={() => setChangePassOpen(true)}>
-              <KeyRound size={14} />
-              <span>Đổi Mật Khẩu</span>
+            <button className="btn-header-action btn-header-outline" onClick={() => setChangePassOpen(true)}>
+              <KeyRound size={15} />
+              <span>Đổi Pass</span>
             </button>
-            <button className="admin-reset-btn btn-sm" onClick={onLogout || onExitAdmin}>
-              <LogOut size={14} />
+            <button className="btn-header-action btn-header-danger" onClick={onLogout || onExitAdmin}>
+              <LogOut size={15} />
               <span>Đăng Xuất</span>
             </button>
           </div>
