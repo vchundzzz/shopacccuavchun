@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, Image as ImageIcon, X, Link, Check, RefreshCw } from 'lucide-react';
+import { UploadCloud, Image as ImageIcon, X, Link, Check, RefreshCw, Cloud } from 'lucide-react';
 import { compressAndReadFile } from '../utils/imageUpload';
+import { isSupabaseConfigured, uploadImageToSupabase } from '../services/supabaseStorage';
+import { storage } from '../services/storage';
 import './ImageFileInput.css';
 
 export default function ImageFileInput({
@@ -8,12 +10,14 @@ export default function ImageFileInput({
   onChange,
   label,
   aspectRatio = 'card', // 'banner' | 'card' | 'square' | 'wide'
-  maxWidth = 900,
-  maxHeight = 900,
-  quality = 0.62,
+  maxWidth = 1000,
+  maxHeight = 1000,
+  quality = 0.72,
+  folder = 'uploads',
   required = false
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingText, setProcessingText] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -22,12 +26,29 @@ export default function ImageFileInput({
     if (!file) return;
     try {
       setIsProcessing(true);
+      const cfg = storage.getShopConfig();
+
+      // Nếu đã cấu hình Supabase Storage -> Tải trực tiếp lên Cloud để lưu trữ không giới hạn!
+      if (isSupabaseConfigured(cfg)) {
+        try {
+          setProcessingText('Đang đẩy ảnh lên Supabase Storage...');
+          const publicUrl = await uploadImageToSupabase(file, folder, cfg);
+          onChange(publicUrl);
+          return;
+        } catch (cloudErr) {
+          console.warn('[ImageFileInput] Supabase upload lỗi, tự động chuyển sang nén cục bộ:', cloudErr);
+        }
+      }
+
+      // Fallback nén nhẹ cục bộ nếu chưa có Supabase
+      setProcessingText('Đang tối ưu và nén ảnh...');
       const compressedDataUrl = await compressAndReadFile(file, maxWidth, maxHeight, quality);
       onChange(compressedDataUrl);
     } catch (err) {
       alert('Không thể đọc tệp ảnh: ' + (err.message || 'Lỗi không xác định'));
     } finally {
       setIsProcessing(false);
+      setProcessingText('');
     }
   };
 
@@ -64,6 +85,8 @@ export default function ImageFileInput({
     }
   };
 
+  const isCloudImage = value && value.includes('supabase.co');
+
   return (
     <div className="image-file-input-wrapper">
       {label && <label className="image-file-label">{label}</label>}
@@ -77,7 +100,7 @@ export default function ImageFileInput({
         onClick={() => fileInputRef.current?.click()}
       >
         <input 
-          type="file"
+          type="file" 
           ref={fileInputRef}
           accept="image/*"
           onChange={handleFileChange}
@@ -115,8 +138,8 @@ export default function ImageFileInput({
           <div className="upload-prompt">
             {isProcessing ? (
               <div className="uploading-spinner">
-                <RefreshCw size={24} className="spin-icon text-primary" />
-                <span>Đang xử lý và nén ảnh...</span>
+                <RefreshCw size={24} className="spin-icon text-primary animate-spin" />
+                <span>{processingText || 'Đang xử lý ảnh...'}</span>
               </div>
             ) : (
               <>
@@ -133,36 +156,53 @@ export default function ImageFileInput({
         )}
       </div>
 
-      {value && value.startsWith('data:image') && (
-        <div className="file-ready-badge text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 mt-1">
-          <Check size={14} className="text-emerald-500" />
-          <span>Đã nạp tệp ảnh từ máy! Bạn nhớ bấm nút "LƯU" để cập nhật sang trang cửa hàng.</span>
+      {isCloudImage && (
+        <div className="file-ready-badge text-xs text-cyan-400 font-semibold flex items-center gap-1.5 mt-1">
+          <Cloud size={14} className="text-cyan-400" />
+          <span>Ảnh đã được lưu trên Supabase Storage Cloud (Không tốn dung lượng máy).</span>
         </div>
       )}
 
-      {/* URL Fallback link option */}
-      <div className="url-toggle-bar">
+      {value && !isCloudImage && value.startsWith('data:image') && (
+        <div className="file-ready-badge text-xs text-emerald-400 font-semibold flex items-center gap-1.5 mt-1">
+          <Check size={14} className="text-emerald-400" />
+          <span>Đã tối ưu hóa nén ảnh! Bạn nhớ bấm nút "LƯU" để cập nhật.</span>
+        </div>
+      )}
+
+      {/* Manual URL Link Toggle */}
+      <div className="image-input-footer mt-1.5 flex items-center justify-between text-xs">
         <button 
           type="button" 
-          className="url-toggle-btn"
+          className="text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
           onClick={() => setShowUrlInput(!showUrlInput)}
         >
           <Link size={12} />
-          <span>{showUrlInput ? 'Ẩn ô nhập URL link' : 'Hoặc nhập link URL ảnh trực tiếp'}</span>
+          <span>{showUrlInput ? 'Ẩn ô dán link ảnh' : 'Dán đường dẫn ảnh Online (URL)'}</span>
         </button>
-
-        {showUrlInput && (
-          <div className="url-input-box mt-1 flex gap-2">
-            <input 
-              type="url" 
-              value={value || ''} 
-              onChange={(e) => onChange(e.target.value)} 
-              placeholder="https://..."
-              className="admin-input flex-1 text-xs"
-            />
-          </div>
-        )}
       </div>
+
+      {showUrlInput && (
+        <div className="manual-url-box mt-2 flex gap-2">
+          <input 
+            type="url" 
+            placeholder="https://example.com/anh-cua-ban.jpg"
+            value={value && !value.startsWith('data:image') ? value : ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="admin-input flex-1 text-xs"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {value && !value.startsWith('data:image') && (
+            <button 
+              type="button" 
+              className="btn-gaming-outline text-xs px-2.5"
+              onClick={handleClear}
+            >
+              Xóa link
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

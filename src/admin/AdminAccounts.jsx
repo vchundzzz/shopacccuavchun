@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import ImageFileInput from './ImageFileInput';
 import { processMultipleFiles } from '../utils/imageUpload';
+import { isSupabaseConfigured, uploadMultipleImagesToSupabase } from '../services/supabaseStorage';
+import { storage } from '../services/storage';
 import { formatVND } from '../components/AccountCard';
 import './AdminAccounts.css';
 
@@ -625,7 +627,16 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                         style={{ display: 'none' }}
                         onChange={async (e) => {
                           if (e.target.files && e.target.files.length > 0) {
-                            const newImages = await processMultipleFiles(e.target.files);
+                            const files = e.target.files;
+                            const cfg = storage.getShopConfig();
+                            let newImages = [];
+                            if (isSupabaseConfigured(cfg)) {
+                              showToast(`⏳ Đang tải ${files.length} ảnh lên Supabase Storage...`);
+                              newImages = await uploadMultipleImagesToSupabase(files, 'accounts', cfg);
+                            }
+                            if (!newImages.length) {
+                              newImages = await processMultipleFiles(files);
+                            }
                             setFormData(prev => ({
                               ...prev,
                               gallery: [...(prev.gallery || []), ...newImages]
