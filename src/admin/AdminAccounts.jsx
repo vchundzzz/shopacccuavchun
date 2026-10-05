@@ -163,6 +163,21 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     }
   };
 
+  // Delete All Accounts
+  const handleDeleteAllAccounts = () => {
+    if (accounts.length === 0) {
+      alert('Kho tài khoản hiện đang trống!');
+      return;
+    }
+    const confirmed = window.confirm(
+      `⚠️ CẢNH BÁO XÓA TẤT CẢ:\n\nBạn có chắc chắn muốn xóa TOÀN BỘ ${accounts.length} tài khoản trong kho?\n\nToàn bộ tài khoản sẽ bị xóa sạch vĩnh viễn cả trên máy và Cloud Database.`
+    );
+    if (confirmed) {
+      onUpdateAccounts([]);
+      showToast('Đã xóa sạch toàn bộ tài khoản khỏi hệ thống!');
+    }
+  };
+
   // Quick Price Update
   const handleSaveQuickPrice = () => {
     const num = Number(newQuickPrice);
@@ -235,7 +250,21 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
           </select>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
+          <button 
+            type="button" 
+            className="btn-gaming-primary"
+            onClick={handleDeleteAllAccounts}
+            title="Xóa toàn bộ tất cả tài khoản trong kho một lần bấm"
+            style={{ 
+              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', 
+              borderColor: '#f87171',
+              boxShadow: '0 2px 10px rgba(239, 68, 68, 0.4)'
+            }}
+          >
+            <Trash2 size={16} />
+            <span>XÓA HẾT ACC {accounts.length > 0 ? `(${accounts.length})` : ''}</span>
+          </button>
           {onExitAdmin && (
             <button className="btn-gaming-success" onClick={onExitAdmin}>
               <ExternalLink size={16} />

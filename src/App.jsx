@@ -52,6 +52,10 @@ export default function App() {
   });
   const [isGrayscale, setIsGrayscale] = useState(false);
 
+  // Thông báo lỗi đồng bộ (hiển thị cho admin, không nuốt lỗi như trước)
+  const [syncError, setSyncError] = useState(null);
+  const [saveMessage, setSaveMessage] = useState(null);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -71,6 +75,31 @@ export default function App() {
       document.body.classList.remove('grayscale-mode');
     }
   }, [isGrayscale]);
+
+  // Tự chữa dung lượng localStorage: nếu dữ liệu đang vượt quá 5MB, nén ảnh ngay khi mở trang.
+  // Đây là nguyên nhân gốc khiến thêm/sửa/xóa "bị xong rồi quay về" sau khi F5.
+  useEffect(() => {
+    let cancelled = false;
+    storage.ensureLocalStorageHealthy().then(async (changed) => {
+      if (cancelled || !changed) return;
+
+      // Đã nén xong -> nạp lại dữ liệu từ localStorage để giao diện phản ánh đúng
+      const fresh = {
+        shopConfig: storage.getShopConfig(),
+        accounts: storage.getAccounts(),
+        banners: storage.getBanners(),
+        categories: storage.getCategories()
+      };
+      setShopConfig(fresh.shopConfig);
+      setAccounts(fresh.accounts);
+      setBanners(fresh.banners);
+      setCategories(fresh.categories);
+
+      // Đẩy bản đã nén lên cloud để khách hàng không bị tải file nặng
+      await storage.persistDataToDisk(fresh);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Load latest data from Cloud Database on startup & window focus (auto-sync for all visitors)
   useEffect(() => {
@@ -131,25 +160,44 @@ export default function App() {
   const [filters, setFilters] = useState(defaultFilters);
 
   // Handlers for data updates
-  const handleUpdateAccounts = (newAccounts) => {
+  // Phải await kết quả lưu để báo lỗi đúng thực tế (trước đây nuốt lỗi -> admin tưởng đã lưu)
+  const handleSaveResult = (result, successMsg) => {
+    if (result && result.quotaExceeded) {
+      setSyncError('Bộ nhớ trình duyệt đã đầy! Dữ liệu chưa được lưu. Hãy dùng ảnh nhỏ hơn hoặc xoá bớt ảnh.');
+      return false;
+    }
+    if (result && result.cloud && result.cloud.success === false && result.disk && result.disk.success === false) {
+      setSyncError('Không lưu được lên Cloud Database: ' + (result.cloud.message || 'lỗi không xác định'));
+      return false;
+    }
+    setSyncError(null);
+    if (successMsg) setSaveMessage(successMsg);
+    return true;
+  };
+
+  const handleUpdateAccounts = async (newAccounts) => {
     setAccounts(newAccounts);
-    storage.saveAccounts(newAccounts);
+    const res = await storage.saveAccounts(newAccounts);
+    handleSaveResult(res);
   };
 
-  const handleUpdateBanners = (newBanners) => {
+  const handleUpdateBanners = async (newBanners) => {
     setBanners(newBanners);
-    storage.saveBanners(newBanners);
+    const res = await storage.saveBanners(newBanners);
+    handleSaveResult(res);
   };
 
-  const handleUpdateCategories = (newCategories) => {
+  const handleUpdateCategories = async (newCategories) => {
     setCategories(newCategories);
-    storage.saveCategories(newCategories);
+    const res = await storage.saveCategories(newCategories);
+    handleSaveResult(res);
   };
 
-  const handleUpdateShopConfig = (newCfg) => {
+  const handleUpdateShopConfig = async (newCfg) => {
     const merged = { ...shopConfig, ...newCfg };
     setShopConfig(merged);
-    storage.saveShopConfig(merged);
+    const res = await storage.saveShopConfig(merged);
+    handleSaveResult(res);
   };
 
   const handleResetData = () => {
@@ -292,6 +340,8 @@ export default function App() {
         onUpdateCategories={handleUpdateCategories}
         onUpdateShopConfig={handleUpdateShopConfig}
         onResetData={handleResetData}
+        syncError={syncError}
+        onDismissSyncError={() => setSyncError(null)}
         onExitAdmin={() => {
           if (window.location.pathname === '/admin') {
             window.history.pushState(null, '', '/');

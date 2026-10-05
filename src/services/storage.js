@@ -1,6 +1,7 @@
 import { DEFAULT_SHOP_CONFIG, INITIAL_ACCOUNTS, INITIAL_BANNERS, INITIAL_CATEGORIES } from '../data/seedData';
 import dbData from '../data/db.json';
 import { cloudDatabase } from './cloudDatabase';
+import { compactImagesInData, estimateLocalStorageUsage } from '../utils/imageUpload';
 
 const STORAGE_KEYS = {
   SHOP_CONFIG: 'shoptyseisei_config_v2',
@@ -10,6 +11,9 @@ const STORAGE_KEYS = {
   AUTH: 'shoptyseisei_auth_token_v2',
   CREDENTIALS: 'shoptyseisei_admin_creds_v2'
 };
+
+// Khoá metadata phụ (không chứa dữ liệu shop) để theo dõi thời điểm sửa lần cuối
+const META_KEY = 'shoptyseisei_meta_v2';
 
 const DEFAULT_ADMIN = {
   username: 'admin',
@@ -21,20 +25,226 @@ const baseAccounts = dbData?.accounts || INITIAL_ACCOUNTS;
 const baseBanners = dbData?.banners || INITIAL_BANNERS;
 const baseCategories = dbData?.categories || INITIAL_CATEGORIES;
 
+/** Nhận diện lỗi đầy bộ nhớ localStorage của mọi trình duyệt. */
+const isQuotaExceeded = (err) =>
+  !!err && (err.name === 'QuotaExceededError' ||
+    err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    err.code === 22 ||
+    err.code === 1014);
+
+/** Đọc metadata cục bộ. */
+const readMeta = () => {
+  try {
+    return JSON.parse(localStorage.getItem(META_KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+};
+
+const writeMeta = (patch) => {
+  try {
+    localStorage.setItem(META_KEY, JSON.stringify({ ...readMeta(), ...patch }));
+  } catch (e) {
+    console.warn('[storage] Không ghi được metadata:', e);
+  }
+};
+
+/** Mốc thời gian (ms) lần cuối người dùng thay đổi dữ liệu trên máy này. */
+const getLocalUpdatedAt = () => readMeta().localUpdatedAt || 0;
+
+/** Đánh dấu "dữ liệu cục bộ mới hơn dữ liệu trên cloud". */
+const markLocalUpdated = () => writeMeta({ localUpdatedAt: Date.now() });
+
+/**
+ * Hàng đợi ghi lên Cloud Database.
+ * Tránh việc nhiều thao tác CRUD chạy song song và ghi đè lẫn nhau (race condition),
+ * khiến dữ liệu trên cloud bị "lùi" về bản cũ.
+ */
+let cloudQueue = Promise.resolve();
+const enqueueCloudWrite = (task) => {
+  cloudQueue = cloudQueue.then(task).catch((e) => {
+    console.warn('[storage] Lỗi trong hàng đợi đồng bộ cloud:', e);
+  });
+  return cloudQueue;
+};
+
 export const storage = {
+  // ---------- HẠ TẦNG LƯU TRỮ CỤC BỘ ----------
+
+  /**
+   * Ghi dữ liệu xuống localStorage, tự động xử lý vượt quota.
+   * Chiến lược: ghi thẳng -> nếu QuotaExceededError thì nén toàn bộ ảnh base64 trong dữ liệu
+   * (và các khoá khác) rồi thử lại. Trả về kết quả chi tiết để lớp giao diện báo lỗi.
+   */
+  async _writeLocal(key, value) {
+    const json = JSON.stringify(value);
+
+    // Đường đi nhanh: dữ liệu vừa phải -> ghi ngay
+    try {
+      localStorage.setItem(key, json);
+      return { success: true, compacted: false, value };
+    } catch (err) {
+      if (!isQuotaExceeded(err)) {
+        console.error(`[storage] Lỗi ghi ${key}:`, err);
+        return { success: false, quotaExceeded: false, error: err };
+      }
+    }
+
+    console.warn(`[storage] Vượt quota khi ghi "${key}" -> đang nén ảnh tự động...`);
+
+    // QUAN TRỌNG: phải nén các khoá KHÁC trước, để giải phóng chỗ cho khoá đang ghi.
+    // Nếu nén sau, thao tác setItem của chính khoá này vẫn luôn thất bại.
+    try {
+      await this._compactOtherLocalKeys([key]);
+    } catch (e) {
+      console.warn('[storage] Không nén được các khoá khác:', e);
+    }
+
+    // Nén ảnh trong chính dữ liệu đang ghi
+    let compacted = value;
+    try {
+      compacted = await compactImagesInData(value);
+    } catch (e) {
+      console.warn('[storage] Không nén được dữ liệu đang ghi:', e);
+    }
+
+    try {
+      localStorage.setItem(key, JSON.stringify(compacted));
+      console.warn('[storage] Đã nén ảnh và ghi lại thành công.');
+      return { success: true, compacted: true, value: compacted };
+    } catch (err2) {
+      console.error(
+        '[storage] Vẫn vượt quota sau khi nén. Dữ liệu chỉ được giữ trong RAM. ' +
+        'Hãy dùng ảnh nhẹ hơn hoặc xoá bớt ảnh. Lỗi:', err2
+      );
+      return { success: false, quotaExceeded: true, error: err2, value };
+    }
+  },
+
+  /** Nén ảnh trong các khoá lưu trữ khác (trừ skipKeys) để giải phóng dung lượng. */
+  async _compactOtherLocalKeys(skipKeys = []) {
+    const keys = Object.values(STORAGE_KEYS).filter((k) => !skipKeys.includes(k));
+    for (const key of keys) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        continue;
+      }
+      const before = raw.length;
+      const compacted = await compactImagesInData(parsed);
+      const after = JSON.stringify(compacted).length;
+      if (after < before) {
+        try {
+          localStorage.setItem(key, JSON.stringify(compacted));
+          console.warn(`[storage] Đã nén "${key}": ${(before / 1024).toFixed(0)}KB -> ${(after / 1024).toFixed(0)}KB`);
+        } catch (e) {
+          // bỏ qua
+        }
+      }
+    }
+  },
+
+  /** Đọc "thô" từ localStorage, không migrate và không ghi lại (tránh đệ quy vô hạn). */
+  _readRaw(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error(`[storage] Lỗi đọc ${key}:`, e);
+    }
+    return fallback;
+  },
+
+  /** Bản shopConfig "sạch" để dùng khi ghi xuống disk/cloud (không side-effect). */
+  _pureGetShopConfig() {
+    const parsed = this._readRaw(STORAGE_KEYS.SHOP_CONFIG, null);
+    if (!parsed) return baseShopConfig;
+
+    const cfg = { ...parsed };
+    // Migrate ảnh/logo cũ về bản base sạch
+    if (!cfg.blackLogo || cfg.blackLogo.includes('shoptyseisei.net/uploads') || cfg.blackLogo.startsWith('data:image/jpeg')) {
+      cfg.blackLogo = baseShopConfig.blackLogo;
+    }
+    if (!cfg.whiteLogo || cfg.whiteLogo.includes('shoptyseisei.net/uploads') || cfg.whiteLogo.startsWith('data:image/jpeg')) {
+      cfg.whiteLogo = baseShopConfig.whiteLogo;
+    }
+    if (!cfg.avatar || cfg.avatar.includes('shoptyseisei.net/uploads') || cfg.avatar.startsWith('data:image/jpeg')) {
+      cfg.avatar = baseShopConfig.avatar;
+    }
+    if (!cfg.shopName || cfg.shopName === 'SHOPTYSEISEI.NET') {
+      cfg.shopName = 'SHOPVANCHUNG';
+    }
+    if (!cfg.mainBanner || cfg.mainBanner.includes('shoptyseisei.net/uploads')) {
+      cfg.mainBanner = baseShopConfig.mainBanner;
+    }
+    if (!cfg.supportCards || !Array.isArray(cfg.supportCards) || cfg.supportCards.length < 4 || cfg.supportCards.some((c) => c.image && c.image.includes('shoptyseisei.net/uploads'))) {
+      cfg.supportCards = baseShopConfig.supportCards;
+    }
+    return { ...baseShopConfig, ...cfg };
+  },
+
+  /** Bản accounts "sạch" để ghi xuống disk/cloud (không side-effect). */
+  _pureGetAccounts() {
+    const parsed = this._readRaw(STORAGE_KEYS.ACCOUNTS, null);
+    const list = Array.isArray(parsed) ? parsed : baseAccounts;
+    return list.filter((a) => a.game !== 'fcmobile');
+  },
+
+  _pureGetBanners() {
+    const parsed = this._readRaw(STORAGE_KEYS.BANNERS, null);
+    return Array.isArray(parsed) ? parsed : baseBanners;
+  },
+
+  _pureGetCategories() {
+    const parsed = this._readRaw(STORAGE_KEYS.CATEGORIES, null);
+    const list = Array.isArray(parsed) ? parsed : baseCategories;
+    return list.filter((c) => c.game !== 'fcmobile');
+  },
+
+  /** Thông tin chẩn đoán dung lượng để hiển thị trong trang quản trị. */
+  getStorageDiagnostics() {
+    const usage = estimateLocalStorageUsage();
+    return {
+      ...usage,
+      localUpdatedAt: getLocalUpdatedAt(),
+      quotaWarning: usage.percent >= 80
+    };
+  },
+
+  /**
+   * Kiểm tra & tự chữa dung lượng localStorage.
+   * Gọi một lần khi mở app: nén toàn bộ ảnh base64 đang lưu quá nặng.
+   * Trả về true nếu có thay đổi (tức là cần đồng bộ lại lên cloud).
+   */
+  async ensureLocalStorageHealthy() {
+    const usage = estimateLocalStorageUsage();
+    if (!usage.overQuota && usage.percent < 85) return false;
+
+    console.warn(`[storage] localStorage đang dùng ${usage.usedMB}MB (${usage.percent}%) -> tiến hành nén ảnh.`);
+    await this._compactOtherLocalKeys([]);
+    markLocalUpdated();
+    return true;
+  },
+
   // Sync all current data to server disk (src/data/db.json) AND Cloud Database
   async persistDataToDisk(override = {}) {
     const payload = {
-      shopConfig: override.shopConfig || this.getShopConfig(),
-      accounts: override.accounts || this.getAccounts(),
-      banners: override.banners || this.getBanners(),
-      categories: override.categories || this.getCategories()
+      shopConfig: override.shopConfig || this._pureGetShopConfig(),
+      accounts: override.accounts || this._pureGetAccounts(),
+      banners: override.banners || this._pureGetBanners(),
+      categories: override.categories || this._pureGetCategories()
     };
 
-    let diskResult = { success: false };
-    let cloudResult = { success: false };
-
-    // 1. Save to local disk via Vite dev server middleware (if local)
+    // 1. Ghi xuống file đĩa (chỉ hoạt động ở chế độ Vite dev server)
+    let diskResult = { success: false, message: 'Chỉ lưu được vào file khi chạy "npm run dev".' };
     try {
       const res = await fetch('/api/save-shop-data', {
         method: 'POST',
@@ -45,13 +255,19 @@ export const storage = {
         diskResult = await res.json();
       }
     } catch (e) {
-      // Offline / static build
+      // Bản build tĩnh / offline -> bỏ qua
     }
 
-    // 2. Save to Cloud Database (Firebase) if URL is configured
+    // 2. Đẩy lên Cloud Database (qua hàng đợi để tránh ghi đè chéo)
     const cloudUrl = cloudDatabase.getCloudUrl(payload.shopConfig);
+    let cloudResult = { success: false, message: 'Chưa cấu hình Cloud Database.' };
     if (cloudUrl) {
-      cloudResult = await cloudDatabase.saveShopData(cloudUrl, payload);
+      cloudResult = await enqueueCloudWrite(() => cloudDatabase.saveShopData(cloudUrl, payload));
+    }
+
+    if (cloudResult.success) {
+      // Đồng bộ thành công -> mốc thời gian cục bộ không còn "mới hơn" cloud nữa
+      writeMeta({ localUpdatedAt: Date.now(), lastCloudSyncAt: Date.now() });
     }
 
     return {
@@ -63,43 +279,55 @@ export const storage = {
 
   // Fetch the latest data from Cloud Database on page load
   async fetchFromCloud() {
-    const currentConfig = this.getShopConfig();
+    const currentConfig = this._pureGetShopConfig();
     const cloudUrl = cloudDatabase.getCloudUrl(currentConfig);
     if (!cloudUrl) return null;
 
     const cloudData = await cloudDatabase.fetchShopData(cloudUrl);
-    if (cloudData && typeof cloudData === 'object') {
-      // Cache cloud data into localStorage so next visit is instant
-      if (cloudData.shopConfig) {
-        if (cloudData.shopConfig.blackLogo?.startsWith('data:image/jpeg')) {
-          cloudData.shopConfig.blackLogo = baseShopConfig.blackLogo;
-        }
-        if (cloudData.shopConfig.whiteLogo?.startsWith('data:image/jpeg')) {
-          cloudData.shopConfig.whiteLogo = baseShopConfig.whiteLogo;
-        }
-        if (cloudData.shopConfig.avatar?.startsWith('data:image/jpeg')) {
-          cloudData.shopConfig.avatar = baseShopConfig.avatar;
-        }
-        if (!cloudData.shopConfig.mainBanner || cloudData.shopConfig.mainBanner.includes('shoptyseisei.net/uploads')) {
-          cloudData.shopConfig.mainBanner = baseShopConfig.mainBanner;
-        }
-        if (!cloudData.shopConfig.supportCards || !Array.isArray(cloudData.shopConfig.supportCards) || cloudData.shopConfig.supportCards.some(c => c.image?.includes('shoptyseisei.net/uploads'))) {
-          cloudData.shopConfig.supportCards = baseShopConfig.supportCards;
-        }
-        localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(cloudData.shopConfig));
-      }
-      if (Array.isArray(cloudData.accounts)) {
-        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cloudData.accounts));
-      }
-      if (Array.isArray(cloudData.banners)) {
-        localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(cloudData.banners));
-      }
-      if (Array.isArray(cloudData.categories)) {
-        localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cloudData.categories));
-      }
-      return cloudData;
+    if (!cloudData || typeof cloudData !== 'object') return null;
+
+    // CHỐNG GHI ĐÈ MẤT THAY ĐỔI CỤC BỘ:
+    // Nếu admin vừa sửa trên máy này mà lần đồng bộ cloud bị lỗi (mạng/quota),
+    // dữ liệu trên cloud sẽ cũ hơn -> tuyệt đối không ghi đè bản cục bộ.
+    const localUpdatedAt = getLocalUpdatedAt();
+    const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0;
+    if (localUpdatedAt && cloudTime && cloudTime < localUpdatedAt) {
+      console.warn('[storage] Dữ liệu trên cloud cũ hơn bản cục bộ -> giữ bản cục bộ để tránh mất dữ liệu vừa sửa.');
+      return null;
     }
-    return null;
+
+    if (cloudData.shopConfig) {
+      if (cloudData.shopConfig.blackLogo?.startsWith('data:image/jpeg')) {
+        cloudData.shopConfig.blackLogo = baseShopConfig.blackLogo;
+      }
+      if (cloudData.shopConfig.whiteLogo?.startsWith('data:image/jpeg')) {
+        cloudData.shopConfig.whiteLogo = baseShopConfig.whiteLogo;
+      }
+      if (cloudData.shopConfig.avatar?.startsWith('data:image/jpeg')) {
+        cloudData.shopConfig.avatar = baseShopConfig.avatar;
+      }
+      if (!cloudData.shopConfig.mainBanner || cloudData.shopConfig.mainBanner.includes('shoptyseisei.net/uploads')) {
+        cloudData.shopConfig.mainBanner = baseShopConfig.mainBanner;
+      }
+      if (!cloudData.shopConfig.supportCards || !Array.isArray(cloudData.shopConfig.supportCards) || cloudData.shopConfig.supportCards.some((c) => c.image?.includes('shoptyseisei.net/uploads'))) {
+        cloudData.shopConfig.supportCards = baseShopConfig.supportCards;
+      }
+      await this._writeLocal(STORAGE_KEYS.SHOP_CONFIG, cloudData.shopConfig);
+    }
+    if (Array.isArray(cloudData.accounts)) {
+      await this._writeLocal(STORAGE_KEYS.ACCOUNTS, cloudData.accounts);
+    }
+    if (Array.isArray(cloudData.banners)) {
+      await this._writeLocal(STORAGE_KEYS.BANNERS, cloudData.banners);
+    }
+    if (Array.isArray(cloudData.categories)) {
+      await this._writeLocal(STORAGE_KEYS.CATEGORIES, cloudData.categories);
+    }
+
+    // Đồng bộ mốc thời gian cục bộ theo đúng bản vừa nhận từ cloud
+    if (cloudTime) writeMeta({ localUpdatedAt: cloudTime, lastCloudSyncAt: Date.now() });
+
+    return cloudData;
   },
 
   // Manually push all current data to a specific Cloud Database URL
@@ -112,13 +340,17 @@ export const storage = {
     this.saveShopConfig(updatedConfig);
 
     const payload = {
-      shopConfig: updatedConfig,
-      accounts: this.getAccounts(),
-      banners: this.getBanners(),
-      categories: this.getCategories()
+      shopConfig: this._pureGetShopConfig(),
+      accounts: this._pureGetAccounts(),
+      banners: this._pureGetBanners(),
+      categories: this._pureGetCategories()
     };
 
-    return await cloudDatabase.saveShopData(cleanUrl, payload);
+    const result = await enqueueCloudWrite(() => cloudDatabase.saveShopData(cleanUrl, payload));
+    if (result.success) {
+      writeMeta({ localUpdatedAt: Date.now(), lastCloudSyncAt: Date.now() });
+    }
+    return result;
   },
 
   // --- SHOP CONFIG (BRANDING, LOGO, AVATAR, BANNERS, POPUP, HOTLINES) ---
@@ -167,13 +399,14 @@ export const storage = {
     return baseShopConfig;
   },
 
-  saveShopConfig(config) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(config));
-      return this.persistDataToDisk({ shopConfig: config });
-    } catch (e) {
-      console.error('Error saving shop config to localStorage', e);
-    }
+  async saveShopConfig(config) {
+    const write = await this._writeLocal(STORAGE_KEYS.SHOP_CONFIG, config);
+    if (write.quotaExceeded) return { success: false, quotaExceeded: true, cloud: { success: false, message: 'Bộ nhớ trình duyệt đã đầy, dữ liệu chưa được lưu!' } };
+
+    // Dùng bản đã nén để đẩy lên cloud -> payload nhẹ, upload nhanh, ít lỗi mạng
+    const diskPromise = this.persistDataToDisk({ shopConfig: write.value });
+    markLocalUpdated(); // luôn đánh dấu, kể cả khi vừa nén ảnh
+    return diskPromise;
   },
 
   updateShopConfig(partial) {
@@ -199,13 +432,13 @@ export const storage = {
     return cleanInitial;
   },
 
-  saveAccounts(accounts) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
-      return this.persistDataToDisk({ accounts });
-    } catch (e) {
-      console.error('Error saving accounts to localStorage', e);
-    }
+  async saveAccounts(accounts) {
+    const write = await this._writeLocal(STORAGE_KEYS.ACCOUNTS, accounts);
+    if (write.quotaExceeded) return { success: false, quotaExceeded: true, cloud: { success: false, message: 'Bộ nhớ trình duyệt đã đầy, dữ liệu chưa được lưu!' } };
+
+    const diskPromise = this.persistDataToDisk({ accounts: write.value });
+    markLocalUpdated(); // luôn đánh dấu, kể cả khi vừa nén ảnh
+    return diskPromise;
   },
 
   addAccount(acc) {
@@ -260,13 +493,13 @@ export const storage = {
     return baseBanners;
   },
 
-  saveBanners(banners) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.BANNERS, JSON.stringify(banners));
-      return this.persistDataToDisk({ banners });
-    } catch (e) {
-      console.error('Error saving banners', e);
-    }
+  async saveBanners(banners) {
+    const write = await this._writeLocal(STORAGE_KEYS.BANNERS, banners);
+    if (write.quotaExceeded) return { success: false, quotaExceeded: true, cloud: { success: false, message: 'Bộ nhớ trình duyệt đã đầy, dữ liệu chưa được lưu!' } };
+
+    const diskPromise = this.persistDataToDisk({ banners: write.value });
+    markLocalUpdated(); // luôn đánh dấu, kể cả khi vừa nén ảnh
+    return diskPromise;
   },
 
   addBanner(banner) {
@@ -312,13 +545,13 @@ export const storage = {
     return cleanCats;
   },
 
-  saveCategories(categories) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-      return this.persistDataToDisk({ categories });
-    } catch (e) {
-      console.error('Error saving categories', e);
-    }
+  async saveCategories(categories) {
+    const write = await this._writeLocal(STORAGE_KEYS.CATEGORIES, categories);
+    if (write.quotaExceeded) return { success: false, quotaExceeded: true, cloud: { success: false, message: 'Bộ nhớ trình duyệt đã đầy, dữ liệu chưa được lưu!' } };
+
+    const diskPromise = this.persistDataToDisk({ categories: write.value });
+    markLocalUpdated(); // luôn đánh dấu, kể cả khi vừa nén ảnh
+    return diskPromise;
   },
 
   updateCategory(id, updatedFields) {

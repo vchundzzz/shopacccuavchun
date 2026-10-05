@@ -8,9 +8,9 @@ export default function ImageFileInput({
   onChange,
   label,
   aspectRatio = 'card', // 'banner' | 'card' | 'square' | 'wide'
-  maxWidth = 1200,
-  maxHeight = 1200,
-  quality = 0.82,
+  maxWidth = 900,
+  maxHeight = 900,
+  quality = 0.62,
   required = false
 }) {
   const [isProcessing, setIsProcessing] = useState(false);

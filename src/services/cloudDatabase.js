@@ -101,6 +101,26 @@ export const cloudDatabase = {
       if (!res.ok) return null;
       const data = await res.json();
       if (data && typeof data === 'object') {
+        // Firebase Realtime DB tự động xóa các field có array rỗng []
+        // Do đó nếu thiếu, chuẩn hóa về array rỗng [] để tránh bị khôi phục nhầm dữ liệu mẫu
+        if (!data.accounts) {
+          data.accounts = [];
+        } else if (!Array.isArray(data.accounts) && typeof data.accounts === 'object') {
+          data.accounts = Object.values(data.accounts);
+        }
+
+        if (!data.banners) {
+          data.banners = [];
+        } else if (!Array.isArray(data.banners) && typeof data.banners === 'object') {
+          data.banners = Object.values(data.banners);
+        }
+
+        if (!data.categories) {
+          data.categories = [];
+        } else if (!Array.isArray(data.categories) && typeof data.categories === 'object') {
+          data.categories = Object.values(data.categories);
+        }
+
         return data;
       }
       return null;

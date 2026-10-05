@@ -29,6 +29,64 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* Lỗi đồng bộ dữ liệu / cảnh báo quota */
+.admin-sync-error {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2a1414;
+  border: 1px solid #ef4444;
+  color: #fecaca;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(680px, calc(100vw - 32px));
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 3001;
+  animation: slideInDown 0.3s ease;
+}
+
+.admin-sync-error svg { flex-shrink: 0; color: #f87171; }
+.admin-sync-error span { flex: 1; line-height: 1.4; }
+
+.admin-sync-error button {
+  background: transparent;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+}
+.admin-sync-error button:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* Cảnh báo dung lượng bộ nhớ - màu hổ phách */
+.admin-storage-warning {
+  top: 84px;
+  background: #2a2210;
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+.admin-storage-warning svg { color: #fbbf24; }
+
+@media (max-width: 768px) {
+  .admin-sync-error {
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .admin-storage-warning { top: auto; bottom: 16px; }
+}
+
 /* Sidebar */
 .admin-sidebar {
   width: 260px;

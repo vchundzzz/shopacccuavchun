@@ -41,13 +41,16 @@ export default function AdminLayout({
   onUpdateShopConfig,
   onResetData,
   onExitAdmin,
-  onLogout
+  onLogout,
+  syncError,
+  onDismissSyncError
 }) {
   const [activeAdminTab, setActiveAdminTab] = useState('dashboard');
   const [toastMessage, setToastMessage] = useState(null);
   const [changePassOpen, setChangePassOpen] = useState(false);
   const [adminUser, setAdminUser] = useState(() => storage.getAdminCredentials().username);
   const [adminPass, setAdminPass] = useState(() => storage.getAdminCredentials().password);
+  const [storageInfo, setStorageInfo] = useState(() => storage.getStorageDiagnostics());
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -77,17 +80,23 @@ export default function AdminLayout({
     try {
       showToast('⏳ Đang đồng bộ dữ liệu lên đám mây...');
       const res = await storage.persistDataToDisk();
+      setStorageInfo(storage.getStorageDiagnostics());
+
       if (res && res.cloud?.success) {
-        showToast('✅ Đã đồng bộ dữ liệu lên Cloud Database thành công! Mọi khách truy cập sẽ thấy ngay.');
+        showToast('✅ Đã đồng bộ lên Cloud Database! Mọi khách truy cập sẽ thấy ngay.');
+        onDismissSyncError?.();
       } else if (res && res.disk?.success) {
-        showToast('✅ Đã lưu vào file mã nguồn (src/data/db.json) và đám mây thành công!');
+        showToast('✅ Đã lưu vào file mã nguồn (src/data/db.json).');
       } else {
-        showToast('✅ Đã lưu dữ liệu vào hệ thống thành công!');
+        showToast('⚠️ Chỉ lưu được trên máy này. ' + (res?.cloud?.message || 'Chưa cấu hình Cloud Database.'));
       }
     } catch (e) {
-      showToast('Đã lưu dữ liệu vào hệ thống!');
+      showToast('⚠️ Đã lưu cục bộ nhưng đồng bộ đám mây bị lỗi.');
     }
   };
+
+  // Cảnh báo dung lượng localStorage - nguyên nhân khiến dữ liệu "tự quay về" sau khi F5
+  const isStorageCritical = storageInfo.quotaWarning;
 
   return (
     <div className="admin-container">
@@ -96,6 +105,28 @@ export default function AdminLayout({
         <div className="admin-toast">
           <CheckCircle size={18} className="text-green" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* LỖI ĐỒNG BỘ - hiển thị thay vì nuốt im lặng */}
+      {syncError && (
+        <div className="admin-sync-error" role="alert">
+          <AlertTriangle size={18} />
+          <span>{syncError}</span>
+          <button type="button" onClick={onDismissSyncError} title="Đóng">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* CẢNH BÁO DUNG LƯỢNG */}
+      {isStorageCritical && (
+        <div className="admin-sync-error admin-storage-warning" role="alert">
+          <AlertTriangle size={18} />
+          <span>
+            Dung lượng trình duyệt đang dùng {storageInfo.usedMB}MB / 5MB ({storageInfo.percent}%).
+            Hãy dùng ảnh nhỏ hơn để thêm/sửa/xóa được lưu vĩnh viễn.
+          </span>
         </div>
       )}
 
