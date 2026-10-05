@@ -16,36 +16,36 @@ export const DEFAULT_SHOP_CONFIG = {
   cloudDbUrl: 'https://shopaccvchun-default-rtdb.asia-southeast1.firebasedatabase.app',
   
   // Banner chính trên cùng
-  mainBanner: 'https://shoptyseisei.net/uploads/03-09-2026/ee76f8d7-7306-4d6c-9a8b-7f0b60703bea.jpg',
+  mainBanner: '/images/banners/main-banner.jpg',
   
   // 4 Thẻ hỗ trợ nhanh trên trang chủ
   supportCards: [
     {
       id: 'sp-ff',
       title: 'Support Free Fire',
-      image: 'https://shoptyseisei.net/uploads/03-09-2026/dc83a6e4-0b77-40f2-8cd1-47c8a2eb407c.jpg',
-      link: 'https://zalo.me/0362481351',
+      image: '/images/banners/sp-ff.jpg',
+      link: 'https://zalo.me/0868994712',
       badge: 'Zalo FF'
     },
     {
       id: 'sp-topup',
       title: 'Support kim cương và hồ sơ',
-      image: 'https://pub-49db8d8cc54b4abc84b979c54f4fdd5b.r2.dev/items/2026/09/13/img_6aa652bde02e9_1789285053.jpeg',
-      link: 'https://topupgiare.com',
+      image: '/images/banners/sp-topup.jpg',
+      link: 'https://zalo.me/0359637777',
       badge: 'Topup'
     },
     {
-      id: 'sp-rent',
-      title: 'Thuê acc Free Fire & LQ qua Zalo',
-      image: 'https://pub-49db8d8cc54b4abc84b979c54f4fdd5b.r2.dev/items/2026/07/07/img_6a4c82265ec8e_1783398950.png',
-      link: 'https://zalo.me/0362481351',
-      badge: 'Thuê Acc'
+      id: 'sp-fcm',
+      title: 'Support FC Mobile',
+      image: '/images/banners/sp-fcm.jpg',
+      link: 'https://zalo.me/0963566724',
+      badge: 'Zalo FCM'
     },
     {
       id: 'sp-lq',
       title: 'Thu acc và support Liên Quân',
-      image: 'https://shoptyseisei.net/uploads/03-09-2026/2ec58ca4-af38-42d3-9cb4-087b08ac7271.jpg',
-      link: 'https://zalo.me/0362481351',
+      image: '/images/banners/sp-lq.jpg',
+      link: 'https://zalo.me/0977296049',
       badge: 'Zalo LQ'
     }
   ],

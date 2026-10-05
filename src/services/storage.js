@@ -80,6 +80,12 @@ export const storage = {
         if (cloudData.shopConfig.avatar?.startsWith('data:image/jpeg')) {
           cloudData.shopConfig.avatar = baseShopConfig.avatar;
         }
+        if (!cloudData.shopConfig.mainBanner || cloudData.shopConfig.mainBanner.includes('shoptyseisei.net/uploads')) {
+          cloudData.shopConfig.mainBanner = baseShopConfig.mainBanner;
+        }
+        if (!cloudData.shopConfig.supportCards || !Array.isArray(cloudData.shopConfig.supportCards) || cloudData.shopConfig.supportCards.some(c => c.image?.includes('shoptyseisei.net/uploads'))) {
+          cloudData.shopConfig.supportCards = baseShopConfig.supportCards;
+        }
         localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(cloudData.shopConfig));
       }
       if (Array.isArray(cloudData.accounts)) {
@@ -137,6 +143,15 @@ export const storage = {
         }
         if (!parsed.shopName || parsed.shopName === 'SHOPTYSEISEI.NET') {
           parsed.shopName = 'SHOPVANCHUNG';
+          updated = true;
+        }
+        // Migrate old or broken external banners to clean local assets
+        if (!parsed.mainBanner || parsed.mainBanner.includes('shoptyseisei.net/uploads')) {
+          parsed.mainBanner = baseShopConfig.mainBanner;
+          updated = true;
+        }
+        if (!parsed.supportCards || !Array.isArray(parsed.supportCards) || parsed.supportCards.length < 4 || parsed.supportCards.some(c => c.image && c.image.includes('shoptyseisei.net/uploads'))) {
+          parsed.supportCards = baseShopConfig.supportCards;
           updated = true;
         }
         const merged = { ...baseShopConfig, ...parsed };

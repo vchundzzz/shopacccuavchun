@@ -5,18 +5,31 @@
 
 .main-banner-card {
   background: #ffffff;
-  border: 1px solid var(--primary-color);
+  border: 1.5px solid #38bdf8;
   border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  padding: 10px;
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.16);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dark .main-banner-card {
   background: #1e293b;
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
-.main-banner-img-wrap img {
+.main-banner-img-wrap {
   width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #0f172a;
+}
+
+.main-banner-img-wrap img,
+.main-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -26,32 +39,39 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  margin-top: 10px;
 }
 
 @media (max-width: 640px) {
   .support-cards-grid {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 
 .support-card-item {
   display: block;
   overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  background: #f8fafc;
 }
 
 .support-card-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+  border-color: #38bdf8;
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.28);
 }
 
 .support-card-img {
   width: 100%;
+  height: auto;
+  display: block;
   object-fit: cover;
-  aspect-ratio: 4.5 / 1;
+  aspect-ratio: 4.39 / 1;
+  border-radius: 6px;
 }
 
 /* Shortcuts: Bạn muốn mua acc game gì? */

@@ -83,8 +83,12 @@ export default function GameSections({
             title="Liên hệ Zalo hỗ trợ Free Fire"
           >
             <img 
-              src={gameHeaders.freefire?.supportBanner || "https://shoptyseisei.net/uploads/03-09-2026/dc83a6e4-0b77-40f2-8cd1-47c8a2eb407c.jpg"} 
+              src={gameHeaders.freefire?.supportBanner || "/images/banners/sp-ff.jpg"} 
               alt="Support Free Fire" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/banners/sp-ff.jpg";
+              }}
             />
           </a>
         </div>
@@ -112,8 +116,12 @@ export default function GameSections({
             title="Thu acc và support Liên Quân"
           >
             <img 
-              src={gameHeaders.lienquan?.supportBanner || "https://shoptyseisei.net/uploads/03-09-2026/2ec58ca4-af38-42d3-9cb4-087b08ac7271.jpg"} 
+              src={gameHeaders.lienquan?.supportBanner || "/images/banners/sp-lq.jpg"} 
               alt="Support Liên Quân" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/banners/sp-lq.jpg";
+              }}
             />
           </a>
         </div>
