@@ -1,0 +1,36 @@
+.click-sparkles-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999999;
+  overflow: hidden;
+}
+
+.click-sparkle-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  font-weight: 900;
+  filter: drop-shadow(0 0 6px var(--color));
+  animation: sparkleBurst 0.6s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes sparkleBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--tx) * 0.7), calc(-50% + var(--ty) * 0.7)) scale(1.2) rotate(45deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty) + 12px)) scale(0.2) rotate(90deg);
+  }
+}

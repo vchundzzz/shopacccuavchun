@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import HomeBanners from './components/HomeBanners';
 import GameSections from './components/GameSections';
@@ -12,6 +12,8 @@ import Footer from './components/Footer';
 import FilterSection from './components/FilterSection';
 import CategoryShowroom from './components/CategoryShowroom';
 import BubbleEffect from './components/BubbleEffect';
+import SwipeBackIndicator from './components/SwipeBackIndicator';
+import ClickSparkleEffect from './components/ClickSparkleEffect';
 import AdminLayout from './admin/AdminLayout';
 import AdminLogin from './admin/AdminLogin';
 import { storage } from './services/storage';
@@ -25,6 +27,19 @@ export default function App() {
   const [banners, setBanners] = useState(() => storage.getBanners());
   const [categories, setCategories] = useState(() => storage.getCategories());
 
+  const categoriesRef = useRef(categories);
+  const accountsRef = useRef(accounts);
+  useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+  useEffect(() => {
+    accountsRef.current = accounts;
+  }, [accounts]);
+
+  // Facebook-style scroll positions & history stack depth
+  const scrollPositionsRef = useRef({});
+  const navDepthRef = useRef(0);
+
   // Dedicated Admin Route & Authentication
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     return window.location.hash === '#admin' || window.location.hash.startsWith('#/admin') || window.location.pathname === '/admin';
@@ -37,6 +52,16 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); // home | category | freefire | lienquan | account-detail
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedAccountId, setSelectedAccountId] = useState(null);
+
+  // Facebook/iOS style Touch Swipe-Back Gesture State
+  const [swipeState, setSwipeState] = useState({
+    isActive: false,
+    progress: 0,
+    deltaX: 0,
+    isReady: false
+  });
+  const touchStartRef = useRef(null);
+  const isSwipingRef = useRef(false);
 
   // Modals state
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(() => {
@@ -52,7 +77,7 @@ export default function App() {
   });
   const [isGrayscale, setIsGrayscale] = useState(false);
 
-  // Thông báo lỗi đồng bộ (hiển thị cho admin, không nuốt lỗi như trước)
+  // Thông báo lỗi đồng bộ
   const [syncError, setSyncError] = useState(null);
   const [saveMessage, setSaveMessage] = useState(null);
 
@@ -76,14 +101,12 @@ export default function App() {
     }
   }, [isGrayscale]);
 
-  // Tự chữa dung lượng localStorage: nếu dữ liệu đang vượt quá 5MB, nén ảnh ngay khi mở trang.
-  // Đây là nguyên nhân gốc khiến thêm/sửa/xóa "bị xong rồi quay về" sau khi F5.
+  // Tự chữa dung lượng localStorage khi mở trang
   useEffect(() => {
     let cancelled = false;
     storage.ensureLocalStorageHealthy().then(async (changed) => {
       if (cancelled || !changed) return;
 
-      // Đã nén xong -> nạp lại dữ liệu từ localStorage để giao diện phản ánh đúng
       const fresh = {
         shopConfig: storage.getShopConfig(),
         accounts: storage.getAccounts(),
@@ -95,13 +118,12 @@ export default function App() {
       setBanners(fresh.banners);
       setCategories(fresh.categories);
 
-      // Đẩy bản đã nén lên cloud để khách hàng không bị tải file nặng
       await storage.persistDataToDisk(fresh);
     });
     return () => { cancelled = true; };
   }, []);
 
-  // Load latest data from Cloud Database on startup & window focus (auto-sync for all visitors)
+  // Load latest data from Cloud Database on startup & window focus
   useEffect(() => {
     const syncData = () => {
       storage.fetchFromCloud().then(cloudData => {
@@ -118,37 +140,220 @@ export default function App() {
     return () => window.removeEventListener('focus', syncData);
   }, []);
 
-  // Listen to hash change (e.g. when typing #admin or navigating to #/tai-khoan/:id)
+  // Parse exact route from hash
+  const parseRouteFromHash = useCallback((hash) => {
+    const h = (hash || window.location.hash || '').trim();
+    if (h === '#admin' || h.startsWith('#/admin') || window.location.pathname === '/admin') {
+      return { type: 'admin' };
+    }
+    if (h.startsWith('#/tai-khoan/') || h.startsWith('#/thong-tin/') || h.startsWith('#/acc/')) {
+      const parts = h.split('/');
+      const idOrCode = parts[2] ? decodeURIComponent(parts[2]).trim() : '';
+      if (idOrCode) {
+        const cleanLower = idOrCode.toLowerCase().replace('#', '');
+        const currentCats = categoriesRef.current || [];
+        const currentAccs = accountsRef.current || [];
+        
+        const isKnownCategory = currentCats.some(c => c.id.toLowerCase() === cleanLower);
+        const isKnownAccount = currentAccs.some(a => 
+          a.id.toString().toLowerCase() === cleanLower ||
+          (a.code && a.code.replace('#', '').toLowerCase() === cleanLower)
+        );
+
+        if (isKnownCategory) {
+          return { type: 'category', categoryId: idOrCode };
+        }
+        if (isKnownAccount) {
+          return { type: 'account-detail', accountId: idOrCode };
+        }
+        if (idOrCode.startsWith('ff-') || idOrCode.startsWith('lq-') || idOrCode.includes('duoi') || idOrCode.includes('cuc-pham')) {
+          return { type: 'category', categoryId: idOrCode };
+        }
+        return { type: 'account-detail', accountId: idOrCode };
+      }
+    }
+    if (h === '#/freefire' || h === '#freefire') {
+      return { type: 'freefire' };
+    }
+    if (h === '#/lienquan' || h === '#lienquan') {
+      return { type: 'lienquan' };
+    }
+    return { type: 'home' };
+  }, []);
+
+  // Push new history state while saving scroll position
+  const navigateHash = useCallback((targetHash, replace = false) => {
+    const currentKey = activeTab === 'category' ? `cat:${selectedCategoryId}` :
+                       activeTab === 'account-detail' ? `acc:${selectedAccountId}` :
+                       activeTab;
+    scrollPositionsRef.current[currentKey] = window.scrollY;
+
+    if (replace) {
+      window.location.replace(targetHash);
+    } else {
+      if (window.location.hash !== targetHash) {
+        navDepthRef.current += 1;
+        window.location.hash = targetHash;
+      }
+    }
+  }, [activeTab, selectedCategoryId, selectedAccountId]);
+
+  // Facebook style back navigation
+  const goBack = useCallback(() => {
+    const currentKey = activeTab === 'category' ? `cat:${selectedCategoryId}` :
+                       activeTab === 'account-detail' ? `acc:${selectedAccountId}` :
+                       activeTab;
+    scrollPositionsRef.current[currentKey] = window.scrollY;
+
+    if (window.history.length > 1 && navDepthRef.current > 0) {
+      navDepthRef.current -= 1;
+      window.history.back();
+    } else if (window.history.length > 1 && window.location.hash !== '' && window.location.hash !== '#/' && window.location.hash !== '#') {
+      window.history.back();
+    } else {
+      if (activeTab === 'account-detail' && selectedCategoryId) {
+        navigateHash(`#/tai-khoan/${selectedCategoryId}`);
+      } else {
+        navigateHash('#/');
+      }
+    }
+  }, [activeTab, selectedCategoryId, selectedAccountId, navigateHash]);
+
+  // Handle Hash & Popstate changes (Back/Forward buttons & native gestures)
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash || '';
-      const isAdm = hash === '#admin' || hash.startsWith('#/admin') || window.location.pathname === '/admin';
-      setIsAdminRoute(isAdm);
-      if (isAdm) {
+    const handleNavigationChange = () => {
+      const route = parseRouteFromHash(window.location.hash);
+      if (route.type === 'admin') {
+        setIsAdminRoute(true);
         setIsAdminAuthenticated(storage.isAdminLoggedIn());
         return;
       }
-      
-      // Direct category or product detail link matching shoptyseisei
-      if (hash.startsWith('#/tai-khoan/') || hash.startsWith('#/thong-tin/') || hash.startsWith('#/acc/')) {
-        const parts = hash.split('/');
-        const idOrCode = parts[2];
-        if (idOrCode) {
-          const isCat = categories.some(c => c.id === idOrCode);
-          if (isCat || idOrCode.startsWith('ff-') || idOrCode.startsWith('lq-') || idOrCode.includes('duoi')) {
-            setSelectedCategoryId(idOrCode);
-            setActiveTab('category');
-          } else {
-            setSelectedAccountId(idOrCode);
-            setActiveTab('account-detail');
-          }
-        }
+
+      setIsAdminRoute(false);
+      let targetKey = 'home';
+
+      if (route.type === 'category') {
+        setSelectedCategoryId(route.categoryId);
+        setSelectedAccountId(null);
+        setActiveTab('category');
+        targetKey = `cat:${route.categoryId}`;
+      } else if (route.type === 'account-detail') {
+        setSelectedAccountId(route.accountId);
+        setActiveTab('account-detail');
+        targetKey = `acc:${route.accountId}`;
+      } else if (route.type === 'freefire') {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('freefire');
+        targetKey = 'freefire';
+      } else if (route.type === 'lienquan') {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('lienquan');
+        targetKey = 'lienquan';
+      } else {
+        setSelectedCategoryId(null);
+        setSelectedAccountId(null);
+        setActiveTab('home');
+        targetKey = 'home';
+      }
+
+      // Facebook-style restore scroll position
+      const savedY = scrollPositionsRef.current[targetKey];
+      if (typeof savedY === 'number') {
+        setTimeout(() => {
+          window.scrollTo({ top: savedY, behavior: 'instant' });
+        }, 15);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     };
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+
+    handleNavigationChange();
+    window.addEventListener('hashchange', handleNavigationChange);
+    window.addEventListener('popstate', handleNavigationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleNavigationChange);
+      window.removeEventListener('popstate', handleNavigationChange);
+    };
+  }, [parseRouteFromHash]);
+
+  // Touch Swipe-Back Gesture listener (Facebook / iOS style swipe right from left edge)
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return;
+      if (activeTab === 'home' && !isAdminRoute) return;
+
+      const touch = e.touches[0];
+      if (touch.clientX <= 55) {
+        touchStartRef.current = {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now()
+        };
+        isSwipingRef.current = true;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isSwipingRef.current || !touchStartRef.current) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+
+      if (deltaX < 0) {
+        isSwipingRef.current = false;
+        setSwipeState({ isActive: false, progress: 0, deltaX: 0, isReady: false });
+        return;
+      }
+
+      if (Math.abs(deltaY) > deltaX * 0.8 && deltaX < 35) {
+        isSwipingRef.current = false;
+        setSwipeState({ isActive: false, progress: 0, deltaX: 0, isReady: false });
+        return;
+      }
+
+      if (deltaX > 8) {
+        const progress = Math.min(deltaX / 75, 1);
+        const isReady = deltaX >= 65;
+        setSwipeState({
+          isActive: true,
+          progress,
+          deltaX,
+          isReady
+        });
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      if (!isSwipingRef.current || !touchStartRef.current) return;
+      const lastX = e.changedTouches?.[0]?.clientX || touchStartRef.current.x;
+      const deltaX = lastX - touchStartRef.current.x;
+
+      if (deltaX >= 65) {
+        if (navigator.vibrate) {
+          try { navigator.vibrate(15); } catch (_) {}
+        }
+        goBack();
+      }
+
+      isSwipingRef.current = false;
+      touchStartRef.current = null;
+      setSwipeState({ isActive: false, progress: 0, deltaX: 0, isReady: false });
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [activeTab, isAdminRoute, goBack]);
 
   // Filter State for catalog view
   const defaultFilters = {
@@ -159,8 +364,6 @@ export default function App() {
   };
   const [filters, setFilters] = useState(defaultFilters);
 
-  // Handlers for data updates
-  // Phải await kết quả lưu để báo lỗi đúng thực tế (trước đây nuốt lỗi -> admin tưởng đã lưu)
   const handleSaveResult = (result, successMsg) => {
     if (result && result.quotaExceeded) {
       setSyncError('Bộ nhớ trình duyệt đã đầy! Dữ liệu chưa được lưu. Hãy dùng ảnh nhỏ hơn hoặc xoá bớt ảnh.');
@@ -208,32 +411,33 @@ export default function App() {
     setShopConfig(fresh.shopConfig);
   };
 
-  // Close announcement popup
   const handleCloseAnnouncement = () => {
     setIsAnnouncementOpen(false);
     sessionStorage.setItem('announcement_closed', 'true');
   };
 
-  // Select category from GameSections
   const handleSelectCategory = (catId) => {
-    setSelectedCategoryId(catId);
-    setActiveTab('category');
-    window.location.hash = `#/tai-khoan/${catId}`;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigateHash(`#/tai-khoan/${catId}`);
   };
 
-
-  // View details -> Opens dedicated product detail page like shoptyseisei.net/tai-khoan/thong-tin/...
   const handleViewDetails = (acc) => {
     const code = acc.code ? acc.code.replace('#', '') : acc.id;
-    setSelectedAccountId(code);
-    setActiveTab('account-detail');
-    window.location.hash = `#/tai-khoan/${code}`;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigateHash(`#/tai-khoan/${code}`);
     setAccounts(prev => prev.map(a => a.id === acc.id ? { ...a, views: (a.views || 0) + 1 } : a));
   };
 
-  // Buy now -> Direct push to Zalo + Open guidance modal
+  const handleTabChange = (tab) => {
+    if (tab === 'home') {
+      navigateHash('#/');
+    } else if (tab === 'freefire') {
+      navigateHash('#/freefire');
+    } else if (tab === 'lienquan') {
+      navigateHash('#/lienquan');
+    } else {
+      setActiveTab(tab);
+    }
+  };
+
   const handleBuyNow = (acc) => {
     const isLQ = acc.game === 'lienquan';
     const targetZalo = isLQ 
@@ -252,7 +456,6 @@ export default function App() {
     setBuyingAccount(acc);
   };
 
-  // Resolve the currently viewed account from state & storage
   const viewedAccount = useMemo(() => {
     if (!selectedAccountId) return null;
     const clean = selectedAccountId.toString().replace('#', '').toLowerCase();
@@ -263,7 +466,6 @@ export default function App() {
     ) || null;
   }, [selectedAccountId, accounts]);
 
-  // Filtered accounts for category or game catalog
   const currentCategory = useMemo(() => {
     if (activeTab === 'category' && selectedCategoryId) {
       return categories.find(c => c.id === selectedCategoryId) || null;
@@ -274,24 +476,18 @@ export default function App() {
   const catalogAccounts = useMemo(() => {
     return accounts.filter(acc => {
       if (acc.hidden) return false;
-      if (acc.game === 'fcmobile') return false; // Exclude FC Mobile
+      if (acc.game === 'fcmobile') return false;
 
-      // Filter by active category
       if (activeTab === 'category' && selectedCategoryId) {
         if (acc.categoryId !== selectedCategoryId) return false;
       }
 
-      // Filter by game tab
       if (activeTab === 'freefire' && acc.game !== 'freefire') return false;
       if (activeTab === 'lienquan' && acc.game !== 'lienquan') return false;
 
-      // Filter by game dropdown in filters
       if (filters.game !== 'all' && acc.game !== filters.game) return false;
-
-      // Filter by status
       if (filters.status !== 'all' && acc.status !== filters.status) return false;
 
-      // Filter by price range
       const p = Number(acc.price) || 0;
       if (filters.priceRange === 'under-1m' && p >= 1000000) return false;
       if (filters.priceRange === '1m-3m' && (p < 1000000 || p >= 3000000)) return false;
@@ -305,7 +501,6 @@ export default function App() {
       if (filters.sort === 'price-desc') return b.price - a.price;
       if (filters.sort === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       
-      // Default: available first, then VIP
       if (a.status === 'sold' && b.status !== 'sold') return 1;
       if (b.status === 'sold' && a.status !== 'sold') return -1;
       return (b.isVip ? 1 : 0) - (a.isVip ? 1 : 0);
@@ -364,23 +559,27 @@ export default function App() {
 
   return (
     <div className="app-wrapper">
-      {/* Floating Soap Bubbles Effect */}
-      <BubbleEffect count={24} />
+      {/* 1. Floating Soap Bubbles + Magic Cyber Embers Effect */}
+      <BubbleEffect count={22} embersCount={18} />
 
-      {/* 1. Main Content Wrapper */}
+      {/* 2. Interactive Click / Touch Sparkles Effect */}
+      <ClickSparkleEffect />
+
+      {/* 3. Floating Swipe-Back Gesture Indicator (Facebook / iOS style) */}
+      <SwipeBackIndicator 
+        isActive={swipeState.isActive}
+        progress={swipeState.progress}
+        deltaX={swipeState.deltaX}
+        isReady={swipeState.isReady}
+      />
+
+      {/* 4. Main Content Wrapper */}
       <div className="layout-content-wrapper">
         {/* Floating Top Navbar Header */}
         <Navbar 
           shopConfig={shopConfig}
           activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-            setSelectedAccountId(null);
-            if (tab === 'home') {
-              setSelectedCategoryId(null);
-              window.location.hash = '';
-            }
-          }}
+          setActiveTab={handleTabChange}
           isDark={isDark}
           onToggleDark={() => setIsDark(!isDark)}
           isGrayscale={isGrayscale}
@@ -411,42 +610,27 @@ export default function App() {
             </>
           )}
 
-          {/* VIEW B: DANH MỤC ACC (Category or Game catalog view) - CHUẨN SHOWROOM SHOPTYSEISEI */}
+          {/* VIEW B: DANH MỤC ACC (Category or Game catalog view) */}
           {(activeTab === 'category' || activeTab === 'freefire' || activeTab === 'lienquan') && (
             <CategoryShowroom 
               currentCategory={currentCategory}
               activeTab={activeTab}
               accounts={accounts}
               shopConfig={shopConfig}
-              onBack={() => {
-                setActiveTab('home');
-                setSelectedCategoryId(null);
-                window.location.hash = '';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onBack={goBack}
               onViewDetails={handleViewDetails}
               onBuyNow={handleBuyNow}
             />
           )}
 
-          {/* VIEW C: TRANG CHI TIẾT TÀI KHOẢN (CHUẨN SHOPTYSEISEI /tai-khoan/thong-tin/...) */}
+          {/* VIEW C: TRANG CHI TIẾT TÀI KHOẢN */}
           {activeTab === 'account-detail' && (
             viewedAccount ? (
               <AccountDetailPage 
                 account={viewedAccount}
                 categories={categories}
                 shopConfig={shopConfig}
-                onBack={() => {
-                  if (selectedCategoryId) {
-                    setActiveTab('category');
-                    window.location.hash = `#/tai-khoan/${selectedCategoryId}`;
-                  } else {
-                    setActiveTab('home');
-                    window.location.hash = '';
-                  }
-                  setSelectedAccountId(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                onBack={goBack}
                 onBuyNow={handleBuyNow}
               />
             ) : (
@@ -459,11 +643,7 @@ export default function App() {
                 </p>
                 <button 
                   className="btn-gaming-primary"
-                  onClick={() => {
-                    setActiveTab('home');
-                    setSelectedAccountId(null);
-                    window.location.hash = '';
-                  }}
+                  onClick={goBack}
                 >
                   Quay lại Showroom
                 </button>
@@ -482,24 +662,17 @@ export default function App() {
         />
       </div>
 
-      {/* 3. Mobile Bottom Sticky Navigation */}
+      {/* 5. Mobile Bottom Sticky Navigation */}
       <MobileNav 
         shopConfig={shopConfig}
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setSelectedAccountId(null);
-          if (tab === 'home') {
-            setSelectedCategoryId(null);
-            window.location.hash = '';
-          }
-        }}
+        setActiveTab={handleTabChange}
       />
 
-      {/* 4. Floating Contact Widgets (Zalo, Facebook, Back-To-Top) */}
+      {/* 6. Floating Contact Widgets (Zalo, Facebook, Back-To-Top) */}
       <FloatingWidgets shopConfig={shopConfig} />
 
-      {/* 5. Modals */}
+      {/* 7. Modals */}
       {/* A. SweetAlert-style Announcement Modal */}
       {shopConfig.popupAnnouncement?.enabled !== false && (
         <AnnouncementModal 
@@ -509,8 +682,7 @@ export default function App() {
         />
       )}
 
-
-      {/* C. Buy / Rent via Direct Zalo Modal */}
+      {/* B. Buy / Rent via Direct Zalo Modal */}
       {buyingAccount && (
         <BuyZaloModal 
           account={buyingAccount}

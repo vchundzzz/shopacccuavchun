@@ -1,0 +1,95 @@
+/* Floating Facebook / iOS style Swipe-to-Back indicator */
+.swipe-back-overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 140px;
+  pointer-events: none;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s ease-out;
+}
+
+.swipe-back-pill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 10px 12px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  border-left: none;
+  border-radius: 0 24px 24px 0;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 16px rgba(6, 182, 212, 0.25);
+  color: #fff;
+  transition: transform 0.08s ease-out, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+.swipe-back-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(6, 182, 212, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22d3ee;
+  transition: all 0.2s ease;
+}
+
+.swipe-back-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
+/* Ready state when pulled far enough to trigger back */
+.swipe-back-overlay.is-ready .swipe-back-pill {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.95), rgba(14, 165, 233, 0.95));
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 10px 36px rgba(6, 182, 212, 0.5),
+    0 0 24px rgba(34, 211, 238, 0.4);
+}
+
+.swipe-back-overlay.is-ready .swipe-back-icon-wrap {
+  background: #ffffff;
+  color: #0284c7;
+  transform: scale(1.1);
+}
+
+.swipe-back-overlay.is-ready .swipe-back-text {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Subtle page enter animation to feel like native Facebook app navigation */
+@keyframes pageSlideInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.category-showroom-wrapper,
+.account-detail-page-wrapper {
+  animation: pageSlideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+

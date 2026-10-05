@@ -111,3 +111,44 @@
     transform: rotate(-2deg) scale(1.02);
   }
 }
+
+/* Floating Magic Cyber Embers / Fireflies */
+.magic-ember {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.75;
+  animation: emberPulse 5s ease-in-out infinite alternate, emberFloat 7s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes emberPulse {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.35);
+  }
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes emberFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  33% {
+    transform: translateY(-26px) translateX(14px);
+  }
+  66% {
+    transform: translateY(-44px) translateX(-12px);
+  }
+  100% {
+    transform: translateY(-18px) translateX(8px);
+  }
+}
+
