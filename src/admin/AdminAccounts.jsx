@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Plus, 
   Search, 
@@ -34,6 +34,7 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
   // Modal State for Add / Edit
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
+  const overlayMouseDownRef = useRef(false);
   
   // Quick Price Edit Modal
   const [quickPriceAccount, setQuickPriceAccount] = useState(null);
@@ -105,6 +106,31 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     setModalOpen(true);
   };
 
+  // Prevent accidental submit when pressing Enter in inputs
+  const handleFormKeyDown = (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  };
+
+  // Add detail image URL safely
+  const handleAddGalleryUrl = () => {
+    if (newGalleryUrl.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        gallery: [...(prev.gallery || []), newGalleryUrl.trim()]
+      }));
+      setNewGalleryUrl('');
+    }
+  };
+
+  // Close modal safely with confirmation
+  const handleCloseModal = () => {
+    if (window.confirm('Bạn có chắc muốn đóng cửa sổ? Dữ liệu đang nhập sẽ không được lưu.')) {
+      setModalOpen(false);
+    }
+  };
+
   // Save Account (Add or Edit)
   const handleSaveAccount = (e, andExit = false) => {
     if (e) e.preventDefault();
@@ -131,8 +157,9 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     }
 
     setModalOpen(false);
-    if (andExit && onExitAdmin) {
-      setTimeout(() => onExitAdmin(), 500);
+    if (andExit) {
+      // Mở tài khoản ở tab mới, giữ nguyên phiên làm việc Admin
+      window.open(`/#/tai-khoan/${encodeURIComponent(formData.code)}`, '_blank');
     }
   };
 
@@ -432,11 +459,16 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
 
       {/* Modal Quick Price */}
       {quickPriceAccount && (
-        <div className="modal-overlay" onClick={() => setQuickPriceAccount(null)}>
+        <div 
+          className="modal-overlay" 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setQuickPriceAccount(null);
+          }}
+        >
           <div className="modal-container quick-price-modal" onClick={(e) => e.stopPropagation()}>
             <div className="detail-modal-header">
               <h3>ĐỔI GIÁ BÁN TÀI KHOẢN {quickPriceAccount.code || quickPriceAccount.id}</h3>
-              <button className="modal-close-btn" onClick={() => setQuickPriceAccount(null)}><X size={20} /></button>
+              <button type="button" className="modal-close-btn" onClick={() => setQuickPriceAccount(null)}><X size={20} /></button>
             </div>
             <div className="p-6">
               <label className="filter-label mb-2">Nhập giá bán mới (VNĐ):</label>
@@ -444,12 +476,18 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                 type="number" 
                 value={newQuickPrice}
                 onChange={(e) => setNewQuickPrice(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSaveQuickPrice();
+                  }
+                }}
                 className="admin-input mb-4"
                 placeholder="Ví dụ: 3500000"
               />
               <div className="flex justify-end gap-3">
-                <button className="btn-gaming-outline" onClick={() => setQuickPriceAccount(null)}>Hủy</button>
-                <button className="btn-gaming-primary" onClick={handleSaveQuickPrice}>Lưu Giá Mới</button>
+                <button type="button" className="btn-gaming-outline" onClick={() => setQuickPriceAccount(null)}>Hủy</button>
+                <button type="button" className="btn-gaming-primary" onClick={handleSaveQuickPrice}>Lưu Giá Mới</button>
               </div>
             </div>
           </div>
@@ -458,14 +496,24 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
 
       {/* Modal Add / Edit Full Account */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+        <div 
+          className="modal-overlay" 
+          onMouseDown={(e) => {
+            overlayMouseDownRef.current = (e.target === e.currentTarget);
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && overlayMouseDownRef.current) {
+              handleCloseModal();
+            }
+          }}
+        >
           <div className="modal-container full-form-modal" onClick={(e) => e.stopPropagation()}>
             <div className="detail-modal-header">
               <h3>{editingAccount ? `CHỈNH SỬA TÀI KHOẢN ${formData.code}` : 'THÊM MỚI TÀI KHOẢN GAME'}</h3>
-              <button className="modal-close-btn" onClick={() => setModalOpen(false)}><X size={20} /></button>
+              <button type="button" className="modal-close-btn" onClick={handleCloseModal}><X size={20} /></button>
             </div>
 
-            <form onSubmit={handleSaveAccount} className="admin-form-body">
+            <form onSubmit={handleSaveAccount} onKeyDown={handleFormKeyDown} className="admin-form-body">
               <div className="form-grid">
                 {/* Game */}
                 <div className="form-group">
@@ -652,21 +700,20 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                         type="url" 
                         value={newGalleryUrl} 
                         onChange={(e) => setNewGalleryUrl(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddGalleryUrl();
+                          }
+                        }}
                         placeholder="Hoặc dán link ảnh chi tiết vào đây..."
                         className="admin-input flex-1 text-xs"
                       />
                       <button 
                         type="button" 
                         className="btn-gaming-outline text-xs px-3" 
-                        onClick={() => {
-                          if (newGalleryUrl.trim()) {
-                            setFormData(prev => ({
-                              ...prev,
-                              gallery: [...(prev.gallery || []), newGalleryUrl.trim()]
-                            }));
-                            setNewGalleryUrl('');
-                          }
-                        }}
+                        onClick={handleAddGalleryUrl}
                       >
                         Thêm Link
                       </button>
@@ -738,23 +785,22 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
               </div>
 
               <div className="admin-form-footer flex gap-2 justify-end flex-wrap">
-                <button type="button" className="btn-gaming-outline" onClick={() => setModalOpen(false)}>
+                <button type="button" className="btn-gaming-outline" onClick={handleCloseModal}>
                   Hủy Bỏ
                 </button>
                 <button type="submit" className="btn-gaming-primary">
                   <Save size={18} />
                   <span>{editingAccount ? 'LƯU THAY ĐỔI' : 'TẠO TÀI KHOẢN'}</span>
                 </button>
-                {onExitAdmin && (
-                  <button 
-                    type="button" 
-                    className="btn-gaming-success" 
-                    onClick={(e) => handleSaveAccount(e, true)}
-                  >
-                    <ExternalLink size={18} />
-                    <span>LƯU & XEM SANG TRANG CHỦ</span>
-                  </button>
-                )}
+                <button 
+                  type="button" 
+                  className="btn-gaming-success" 
+                  onClick={(e) => handleSaveAccount(e, true)}
+                  title="Lưu lại và mở tab mới để xem thử"
+                >
+                  <ExternalLink size={18} />
+                  <span>LƯU & XEM TRÊN WEB (TAB MỚI)</span>
+                </button>
               </div>
             </form>
           </div>

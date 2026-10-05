@@ -191,6 +191,12 @@ export default function ImageFileInput({
             onChange={(e) => onChange(e.target.value)}
             className="admin-input flex-1 text-xs"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
           />
           {value && !value.startsWith('data:image') && (
             <button 

@@ -282,7 +282,8 @@ export default function App() {
   useEffect(() => {
     const handleTouchStart = (e) => {
       if (e.touches.length !== 1) return;
-      if (activeTab === 'home' && !isAdminRoute) return;
+      if (isAdminRoute) return;
+      if (activeTab === 'home') return;
 
       const touch = e.touches[0];
       if (touch.clientX <= 55) {
@@ -693,3 +694,4 @@ export default function App() {
     </div>
   );
 }
+
