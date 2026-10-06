@@ -12,6 +12,10 @@
     "zaloLQ": "0362481351",
     "facebookLink": "https://www.facebook.com/profile.php?id=100078023670452",
     "workingHours": "24/7",
+    "adminCredentials": {
+      "username": "chungdzvcl",
+      "password": "chungdzvcl"
+    },
     "mainBanner": "https://gkkonaaxggjulbutweoc.supabase.co/storage/v1/object/public/shop-images/uploads/1791220133037_vdv8n25.jpg",
     "supportCards": [
       {

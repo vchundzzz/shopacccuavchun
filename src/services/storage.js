@@ -3,6 +3,7 @@ import dbData from '../data/db.json';
 import { cloudDatabase } from './cloudDatabase';
 import { compactImagesInData, estimateLocalStorageUsage } from '../utils/imageUpload';
 import { idbGet, idbSet, idbDelete, idbClear, isIndexedDbSupported } from './indexedDb';
+import { isSupabaseConfigured, uploadImageToSupabase } from './supabaseStorage';
 
 const STORAGE_KEYS = {
   SHOP_CONFIG: 'shoptyseisei_config_v2',
@@ -17,6 +18,11 @@ const STORAGE_KEYS = {
 const META_KEY = 'shoptyseisei_meta_v2';
 
 const DEFAULT_ADMIN = {
+  username: 'chungdzvcl',
+  password: 'chungdzvcl'
+};
+
+const BACKUP_ADMIN = {
   username: 'admin',
   password: 'admin123'
 };
@@ -238,7 +244,7 @@ export const storage = {
       const idbAccounts = await idbGet(STORAGE_KEYS.ACCOUNTS);
       if (Array.isArray(idbAccounts) && idbAccounts.length > 0) {
         const localAccounts = this.getAccounts();
-        if (idbAccounts.length > localAccounts.length) {
+        if (idbAccounts.length > localAccounts.length || localAccounts.length === 0) {
           console.info(`[storage] Khôi phục ${idbAccounts.length} tài khoản từ IndexedDB.`);
           await this._writeLocal(STORAGE_KEYS.ACCOUNTS, idbAccounts);
           return idbAccounts;
@@ -354,15 +360,25 @@ export const storage = {
     const cloudData = await cloudDatabase.fetchShopData(cloudUrl);
     if (!cloudData || typeof cloudData !== 'object') return null;
 
-    // CHỐNG GHI ĐÈ MẤT THAY ĐỔI CỤC BỘ
-    const localUpdatedAt = getLocalUpdatedAt();
-    const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0;
-    if (localUpdatedAt && cloudTime && cloudTime < localUpdatedAt) {
-      console.warn('[storage] Dữ liệu trên cloud cũ hơn bản cục bộ -> giữ bản cục bộ để tránh mất dữ liệu vừa sửa.');
-      return null;
+    // Đồng bộ adminCredentials từ Cloud Database nếu có
+    if (cloudData.adminCredentials && cloudData.adminCredentials.username && cloudData.adminCredentials.password) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(cloudData.adminCredentials));
+        idbSet(STORAGE_KEYS.CREDENTIALS, cloudData.adminCredentials).catch(() => {});
+      } catch (e) {}
+    } else if (cloudData.shopConfig?.adminCredentials) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(cloudData.shopConfig.adminCredentials));
+        idbSet(STORAGE_KEYS.CREDENTIALS, cloudData.shopConfig.adminCredentials).catch(() => {});
+      } catch (e) {}
     }
 
     if (cloudData.shopConfig) {
+      // Bảo tồn adminCredentials nếu bản tải về thiếu
+      const existingCreds = this.getAdminCredentials();
+      if (!cloudData.shopConfig.adminCredentials && existingCreds) {
+        cloudData.shopConfig.adminCredentials = existingCreds;
+      }
       if (cloudData.shopConfig.blackLogo?.startsWith('data:image/jpeg')) {
         cloudData.shopConfig.blackLogo = baseShopConfig.blackLogo;
       }
@@ -395,7 +411,8 @@ export const storage = {
       await this._writeLocal(STORAGE_KEYS.CATEGORIES, cloudData.categories);
     }
 
-    if (cloudTime) writeMeta({ localUpdatedAt: cloudTime, lastCloudSyncAt: Date.now() });
+    const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : Date.now();
+    writeMeta({ localUpdatedAt: cloudTime, lastCloudSyncAt: Date.now() });
 
     return cloudData;
   },
@@ -501,7 +518,37 @@ export const storage = {
   },
 
   async saveAccounts(accounts) {
-    const write = await this._writeLocal(STORAGE_KEYS.ACCOUNTS, accounts);
+    let sanitizedAccounts = accounts;
+    try {
+      const cfg = this.getShopConfig();
+      if (isSupabaseConfigured(cfg)) {
+        sanitizedAccounts = await Promise.all(accounts.map(async (acc) => {
+          let updatedAcc = { ...acc };
+          if (acc.thumbnail && typeof acc.thumbnail === 'string' && acc.thumbnail.startsWith('data:image')) {
+            try {
+              updatedAcc.thumbnail = await uploadImageToSupabase(acc.thumbnail, 'accounts', cfg);
+            } catch (e) {}
+          }
+          if (Array.isArray(acc.gallery)) {
+            updatedAcc.gallery = await Promise.all(acc.gallery.map(async (img) => {
+              if (img && typeof img === 'string' && img.startsWith('data:image')) {
+                try {
+                  return await uploadImageToSupabase(img, 'accounts', cfg);
+                } catch (e) {
+                  return img;
+                }
+              }
+              return img;
+            }));
+          }
+          return updatedAcc;
+        }));
+      }
+    } catch (e) {
+      console.warn('[storage] Lỗi chuyển đổi ảnh sang Supabase:', e);
+    }
+
+    const write = await this._writeLocal(STORAGE_KEYS.ACCOUNTS, sanitizedAccounts);
     if (write.quotaExceeded) return { success: false, quotaExceeded: true, cloud: { success: false, message: 'Bộ nhớ trình duyệt đã đầy, dữ liệu chưa được lưu!' } };
 
     const diskPromise = this.persistDataToDisk({ accounts: write.value });
@@ -659,7 +706,7 @@ export const storage = {
     return DEFAULT_ADMIN;
   },
 
-  setAdminCredentials(username, password) {
+  async setAdminCredentials(username, password) {
     const cleanUser = (username || '').trim();
     const cleanPass = (password || '').trim();
     if (!cleanUser || !cleanPass) return false;
@@ -667,12 +714,31 @@ export const storage = {
     const credObj = { username: cleanUser, password: cleanPass };
     try {
       localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credObj));
-      idbSet(STORAGE_KEYS.CREDENTIALS, credObj).catch(() => {});
+      await idbSet(STORAGE_KEYS.CREDENTIALS, credObj).catch(() => {});
 
       // Đồng bộ trực tiếp vào shopConfig để đưa lên Cloud Database & đồng bộ mọi thiết bị
       const currentCfg = this.getShopConfig();
       const updatedCfg = { ...currentCfg, adminCredentials: credObj };
-      this.saveShopConfig(updatedCfg);
+      await this.saveShopConfig(updatedCfg);
+
+      // Đẩy trực tiếp lên Firebase Realtime Database
+      const cloudUrl = cloudDatabase.getCloudUrl(currentCfg);
+      if (cloudUrl) {
+        try {
+          await fetch(`${cloudUrl}/shopData/adminCredentials.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credObj)
+          });
+          await fetch(`${cloudUrl}/shopData/shopConfig/adminCredentials.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credObj)
+          });
+        } catch (e) {
+          console.warn('[storage] Không thể gửi adminCredentials lên Firebase:', e);
+        }
+      }
       return true;
     } catch (e) {
       console.error('Error setting admin credentials', e);
@@ -696,11 +762,15 @@ export const storage = {
     const inputPass = (password || '').trim();
     const credPass = (creds.password || '').trim();
 
-    // Hỗ trợ đăng nhập bằng tài khoản mới hoặc tài khoản mặc định
+    // Hỗ trợ đăng nhập bằng:
+    // 1. Thông tin đã đổi trong hệ thống
     const matchCurrent = (inputUser === credUser && inputPass === credPass);
-    const matchDefault = (inputUser === DEFAULT_ADMIN.username.toLowerCase() && inputPass === DEFAULT_ADMIN.password);
+    // 2. Tài khoản quản trị chungdzvcl / chungdzvcl
+    const matchChung = (inputUser === 'chungdzvcl' && inputPass === 'chungdzvcl');
+    // 3. Tài khoản quản trị dự phòng admin / admin123
+    const matchAdmin = (inputUser === 'admin' && inputPass === 'admin123');
 
-    if (matchCurrent || matchDefault) {
+    if (matchCurrent || matchChung || matchAdmin) {
       const token = `adm_token_${Date.now()}_${Math.random()}`;
       if (remember) {
         localStorage.setItem(STORAGE_KEYS.AUTH, token);

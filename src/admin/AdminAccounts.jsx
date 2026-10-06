@@ -57,10 +57,8 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     outfits: 'Set Quỷ Dạ Xoa, Áo Mùa 2',
     rareItems: 'Đồ Cổ S1-S2',
     description: 'Tài khoản chính chủ, thông tin trắng sạch 100%, hỗ trợ đổi thông tin bảo mật vĩnh viễn.',
-    thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
-    gallery: [
-      'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop'
-    ],
+    thumbnail: '',
+    gallery: [],
     status: 'available',
     hidden: false,
     isVip: false,
@@ -89,7 +87,9 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
     setFormData({
       ...initialForm,
       code: `#FF${randomNum}`,
-      title: `ACC FF VIP #${randomNum} - AK RỒNG XANH + MP40 MÃNG XÀ`
+      title: `ACC FF VIP #${randomNum} - AK RỒNG XANH + MP40 MÃNG XÀ`,
+      thumbnail: '',
+      gallery: []
     });
     setEditingAccount(null);
     setModalOpen(true);
@@ -139,15 +139,26 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
       return;
     }
 
+    const finalThumb = formData.thumbnail || (formData.gallery && formData.gallery[0]) || '';
+    const finalGallery = (formData.gallery && formData.gallery.length > 0)
+      ? formData.gallery
+      : (finalThumb ? [finalThumb] : []);
+
+    const accountData = {
+      ...formData,
+      thumbnail: finalThumb,
+      gallery: finalGallery
+    };
+
     if (editingAccount) {
       const updated = accounts.map(a => 
-        (a.id === editingAccount.id || a.code === editingAccount.code) ? { ...formData, id: a.id } : a
+        (a.id === editingAccount.id || a.code === editingAccount.code) ? { ...accountData, id: a.id } : a
       );
       onUpdateAccounts(updated);
       showToast(`Đã cập nhật thành công tài khoản ${formData.code}!`);
     } else {
       const newAcc = {
-        ...formData,
+        ...accountData,
         id: formData.code,
         views: 0,
         createdAt: new Date().toISOString()
@@ -332,11 +343,11 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                     {/* Thumbnail */}
                     <td>
                       <img 
-                        src={acc.thumbnail} 
+                        src={acc.thumbnail || (acc.gallery && acc.gallery[0]) || '/images/logo-shopvanchung.png'} 
                         alt="" 
                         className="table-acc-thumb"
                         onError={(e) => {
-                          e.target.src = 'https://shoptyseisei.net/uploads/03-09-2026/4bb14574-5f3d-426a-9da7-11f8215e3b11.jpg';
+                          e.target.src = '/images/logo-shopvanchung.png';
                         }}
                       />
                     </td>
@@ -654,8 +665,15 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                   <ImageFileInput 
                     label="Ảnh Bìa Đại Diện (Thumbnail):"
                     value={formData.thumbnail} 
-                    onChange={(val) => setFormData({ ...formData, thumbnail: val })}
+                    onChange={(val) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        thumbnail: val,
+                        gallery: (prev.gallery && prev.gallery.length > 0) ? prev.gallery : (val ? [val] : [])
+                      }));
+                    }}
                     aspectRatio="card"
+                    folder="accounts"
                   />
                 </div>
 
@@ -685,10 +703,15 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                             if (!newImages.length) {
                               newImages = await processMultipleFiles(files);
                             }
-                            setFormData(prev => ({
-                              ...prev,
-                              gallery: [...(prev.gallery || []), ...newImages]
-                            }));
+                            setFormData(prev => {
+                              const updatedGallery = [...(prev.gallery || []), ...newImages];
+                              const updatedThumb = prev.thumbnail || updatedGallery[0] || '';
+                              return {
+                                ...prev,
+                                gallery: updatedGallery,
+                                thumbnail: updatedThumb
+                              };
+                            });
                             showToast(`Đã thêm ${newImages.length} ảnh vào album!`);
                           }
                         }}

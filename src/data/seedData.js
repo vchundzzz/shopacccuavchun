@@ -17,6 +17,10 @@ export const DEFAULT_SHOP_CONFIG = {
   supabaseUrl: 'https://gkkonaaxggjulbutweoc.supabase.co',
   supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdra29uYWF4Z2dqdWxidXR3ZW9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NDM2NDIsImV4cCI6MjEwNjUxOTY0Mn0.8pChGd7DRl-4QRLpQoM0mI3vZ5IjBsjEL9MlYow-P10',
   supabaseBucket: 'shop-images',
+  adminCredentials: {
+    username: 'chungdzvcl',
+    password: 'chungdzvcl'
+  },
   
   // Banner chính trên cùng
   mainBanner: '/images/banners/main-banner.jpg',

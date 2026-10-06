@@ -132,7 +132,7 @@ export default function AdminCategories({ categories, onUpdateCategories, showTo
               alt={cat.name} 
               className="cat-preview-img" 
               onError={(e) => {
-                e.target.src = 'https://shoptyseisei.net/uploads/03-09-2026/4a880721-608d-4cd0-af80-103f8bd1764b.jpg';
+                e.target.src = '/images/logo-shopvanchung.png';
               }}
             />
           ) : (

@@ -57,7 +57,7 @@ export default function AdminLayout({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleSavePassword = (e) => {
+  const handleSavePassword = async (e) => {
     e.preventDefault();
     const cleanUser = adminUser.trim();
     const cleanPass = adminPass.trim();
@@ -65,7 +65,7 @@ export default function AdminLayout({
       alert('Tên đăng nhập và mật khẩu không được để trống!');
       return;
     }
-    const success = storage.setAdminCredentials(cleanUser, cleanPass);
+    const success = await storage.setAdminCredentials(cleanUser, cleanPass);
     if (success) {
       showToast(`Đã lưu tài khoản (${cleanUser}) & mật khẩu mới thành công!`);
     } else {

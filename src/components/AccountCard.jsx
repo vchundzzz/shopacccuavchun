@@ -35,12 +35,12 @@ export default function AccountCard({ account, onViewDetails, onBuyNow }) {
       {/* Thumbnail & Badges */}
       <div className="card-thumb-wrap" onClick={() => onViewDetails(account)}>
         <img 
-          src={account.thumbnail} 
+          src={account.thumbnail || (account.gallery && account.gallery[0]) || '/images/logo-shopvanchung.png'} 
           alt={account.title} 
           className="card-thumb-img"
           loading="lazy"
           onError={(e) => {
-            e.target.src = 'https://shoptyseisei.net/uploads/03-09-2026/4bb14574-5f3d-426a-9da7-11f8215e3b11.jpg';
+            e.target.src = '/images/logo-shopvanchung.png';
           }}
         />
         <div className="card-thumb-overlay">

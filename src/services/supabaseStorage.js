@@ -9,6 +9,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { DEFAULT_SHOP_CONFIG } from '../data/seedData';
 
 // Cache client instance để tránh khởi tạo nhiều lần
 let cachedClient = null;
@@ -16,12 +17,12 @@ let lastUrl = '';
 let lastKey = '';
 
 /**
- * Lấy cấu hình Supabase từ shopConfig hoặc biến môi trường
+ * Lấy cấu hình Supabase từ shopConfig hoặc biến môi trường hoặc cấu hình mặc định
  */
 export function getSupabaseCredentials(shopConfig = {}) {
-  const url = shopConfig.supabaseUrl || import.meta.env.VITE_SUPABASE_URL || '';
-  const anonKey = shopConfig.supabaseAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  const bucket = shopConfig.supabaseBucket || import.meta.env.VITE_SUPABASE_BUCKET || 'shop-images';
+  const url = shopConfig?.supabaseUrl || DEFAULT_SHOP_CONFIG?.supabaseUrl || import.meta.env?.VITE_SUPABASE_URL || '';
+  const anonKey = shopConfig?.supabaseAnonKey || DEFAULT_SHOP_CONFIG?.supabaseAnonKey || import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+  const bucket = shopConfig?.supabaseBucket || DEFAULT_SHOP_CONFIG?.supabaseBucket || import.meta.env?.VITE_SUPABASE_BUCKET || 'shop-images';
 
   return {
     url: url.trim(),

@@ -135,9 +135,10 @@ export default function AdminLogin({ onLoginSuccess, onBackToShop }) {
         {/* Security Footnote */}
         <div className="login-card-footer">
           <div className="credentials-hint-box">
-            <strong>Thông tin đăng nhập mặc định:</strong>
-            <p>Tài khoản: <code>admin</code> • Mật khẩu: <code>admin123</code></p>
-            <small>(Bạn có thể đổi mật khẩu này bất kỳ lúc nào bên trong trang quản trị)</small>
+            <strong>Thông tin đăng nhập quản trị:</strong>
+            <p>Tài khoản: <code>chungdzvcl</code> (hoặc <code>admin</code>)</p>
+            <p>Mật khẩu: <code>chungdzvcl</code> (hoặc <code>admin123</code>)</p>
+            <small>(Bạn có thể đổi mật khẩu bất kỳ lúc nào bên trong trang quản trị)</small>
           </div>
         </div>
       </div>
