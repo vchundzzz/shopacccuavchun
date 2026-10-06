@@ -300,12 +300,10 @@
   object-fit: cover;
 }
 
-.gallery-preview-grid,
-.admin-gallery-preview-grid {
+.gallery-preview-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 8px;
 }
 
 .gallery-preview-item {

@@ -566,34 +566,13 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
 
                 {/* Code */}
                 <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label>Mã Acc (VD: #FF1025, #LQ999):</label>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const randomNum = Math.floor(10000 + Math.random() * 90000);
-                        const prefix = formData.game === 'lienquan' ? '#LQ' : '#FF';
-                        setFormData(prev => ({ ...prev, code: `${prefix}${randomNum}` }));
-                      }}
-                      style={{ 
-                        background: 'rgba(255, 255, 255, 0.08)', 
-                        border: '1px solid rgba(255, 255, 255, 0.15)', 
-                        color: '#ffb900', 
-                        padding: '2px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '0.75rem', 
-                        cursor: 'pointer' 
-                      }}
-                    >
-                      🎲 Tạo mã
-                    </button>
-                  </div>
+                  <label>Mã Acc (VD: #FF1025, #LQ999):</label>
                   <input 
                     type="text" 
                     value={formData.code} 
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                     required
-                    className="admin-input font-bold"
+                    className="admin-input"
                   />
                 </div>
 
@@ -619,11 +598,7 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     required
                     className="admin-input font-bold text-fire"
-                    placeholder="Ví dụ: 1500000"
                   />
-                  <span style={{ fontSize: '0.78rem', color: '#ffb900', fontWeight: '600' }}>
-                    ≈ {formatVND(formData.price || 0)}
-                  </span>
                 </div>
 
                 {/* Original Price */}
@@ -636,11 +611,6 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
                     placeholder="Ví dụ: 3000000"
                     className="admin-input"
                   />
-                  {Boolean(formData.originalPrice) && (
-                    <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                      ≈ {formatVND(formData.originalPrice)}
-                    </span>
-                  )}
                 </div>
 
                 {/* Rank */}

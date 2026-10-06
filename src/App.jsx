@@ -134,27 +134,8 @@ export default function App() {
 
     initDataOnLoad();
 
-    const handleFocusSync = () => {
-      storage.fetchFromCloud().then(cloudData => {
-        if (!cancelled && cloudData) {
-          if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
-          if (Array.isArray(cloudData.accounts) && cloudData.accounts.length > 0) {
-            setAccounts(cloudData.accounts);
-          }
-          if (Array.isArray(cloudData.banners) && cloudData.banners.length > 0) {
-            setBanners(cloudData.banners);
-          }
-          if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
-            setCategories(cloudData.categories);
-          }
-        }
-      });
-    };
-
-    window.addEventListener('focus', handleFocusSync);
     return () => {
       cancelled = true;
-      window.removeEventListener('focus', handleFocusSync);
     };
   }, []);
 
