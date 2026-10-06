@@ -231,18 +231,42 @@ export const storage = {
   },
 
   /**
+   * Khôi phục tài khoản từ IndexedDB nếu localStorage bị thiếu hoặc ít hơn
+   */
+  async restoreFromIndexedDb() {
+    try {
+      const idbAccounts = await idbGet(STORAGE_KEYS.ACCOUNTS);
+      if (Array.isArray(idbAccounts) && idbAccounts.length > 0) {
+        const localAccounts = this.getAccounts();
+        if (idbAccounts.length > localAccounts.length) {
+          console.info(`[storage] Khôi phục ${idbAccounts.length} tài khoản từ IndexedDB.`);
+          await this._writeLocal(STORAGE_KEYS.ACCOUNTS, idbAccounts);
+          return idbAccounts;
+        }
+      }
+    } catch (e) {
+      console.warn('[storage] Không thể khôi phục từ IndexedDB:', e);
+    }
+    return null;
+  },
+
+  /**
    * Kiểm tra & tự động tối ưu dung lượng khi mở trang:
    * 1. Sao lưu toàn bộ dữ liệu vào IndexedDB nếu chưa có
    * 2. Nếu localStorage dùng > 70%, nén ảnh tự động để giảm tải
    */
   async ensureLocalStorageHealthy() {
-    // Sao lưu sang IndexedDB
+    // Sao lưu sang IndexedDB và ngược lại
     try {
       for (const key of Object.values(STORAGE_KEYS)) {
         const idbVal = await idbGet(key);
         const localVal = this._readRaw(key, null);
         if (localVal && !idbVal) {
           await idbSet(key, localVal);
+        } else if ((!localVal || (Array.isArray(localVal) && localVal.length === 0)) && idbVal && (!Array.isArray(idbVal) || idbVal.length > 0)) {
+          try {
+            localStorage.setItem(key, JSON.stringify(idbVal));
+          } catch (e) {}
         }
       }
     } catch (e) {}
@@ -357,7 +381,12 @@ export const storage = {
       await this._writeLocal(STORAGE_KEYS.SHOP_CONFIG, cloudData.shopConfig);
     }
     if (Array.isArray(cloudData.accounts)) {
-      await this._writeLocal(STORAGE_KEYS.ACCOUNTS, cloudData.accounts);
+      const currentAccounts = this.getAccounts();
+      if (cloudData.accounts.length > 0 || currentAccounts.length === 0) {
+        await this._writeLocal(STORAGE_KEYS.ACCOUNTS, cloudData.accounts);
+      } else {
+        console.warn('[storage] Bỏ qua danh sách accounts rỗng từ cloud để bảo vệ tài khoản cục bộ.');
+      }
     }
     if (Array.isArray(cloudData.banners)) {
       await this._writeLocal(STORAGE_KEYS.BANNERS, cloudData.banners);
@@ -468,7 +497,6 @@ export const storage = {
       console.error('Error reading accounts from localStorage', e);
     }
     const cleanInitial = baseAccounts.filter(a => a.game !== 'fcmobile');
-    this.saveAccounts(cleanInitial);
     return cleanInitial;
   },
 
@@ -615,16 +643,36 @@ export const storage = {
   getAdminCredentials() {
     try {
       const creds = localStorage.getItem(STORAGE_KEYS.CREDENTIALS);
-      if (creds) return JSON.parse(creds);
+      if (creds) {
+        const parsed = JSON.parse(creds);
+        if (parsed && parsed.username && parsed.password) return parsed;
+      }
     } catch (e) {
       console.error('Error reading admin credentials', e);
     }
+    try {
+      const cfg = this._readRaw(STORAGE_KEYS.SHOP_CONFIG, null);
+      if (cfg && cfg.adminCredentials && cfg.adminCredentials.username && cfg.adminCredentials.password) {
+        return cfg.adminCredentials;
+      }
+    } catch (e) {}
     return DEFAULT_ADMIN;
   },
 
   setAdminCredentials(username, password) {
+    const cleanUser = (username || '').trim();
+    const cleanPass = (password || '').trim();
+    if (!cleanUser || !cleanPass) return false;
+
+    const credObj = { username: cleanUser, password: cleanPass };
     try {
-      localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify({ username, password }));
+      localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credObj));
+      idbSet(STORAGE_KEYS.CREDENTIALS, credObj).catch(() => {});
+
+      // Đồng bộ trực tiếp vào shopConfig để đưa lên Cloud Database & đồng bộ mọi thiết bị
+      const currentCfg = this.getShopConfig();
+      const updatedCfg = { ...currentCfg, adminCredentials: credObj };
+      this.saveShopConfig(updatedCfg);
       return true;
     } catch (e) {
       console.error('Error setting admin credentials', e);
@@ -643,7 +691,16 @@ export const storage = {
 
   loginAdmin(username, password, remember = false) {
     const creds = this.getAdminCredentials();
-    if (username.trim() === creds.username && password === creds.password) {
+    const inputUser = (username || '').trim().toLowerCase();
+    const credUser = (creds.username || '').trim().toLowerCase();
+    const inputPass = (password || '').trim();
+    const credPass = (creds.password || '').trim();
+
+    // Hỗ trợ đăng nhập bằng tài khoản mới hoặc tài khoản mặc định
+    const matchCurrent = (inputUser === credUser && inputPass === credPass);
+    const matchDefault = (inputUser === DEFAULT_ADMIN.username.toLowerCase() && inputPass === DEFAULT_ADMIN.password);
+
+    if (matchCurrent || matchDefault) {
       const token = `adm_token_${Date.now()}_${Math.random()}`;
       if (remember) {
         localStorage.setItem(STORAGE_KEYS.AUTH, token);

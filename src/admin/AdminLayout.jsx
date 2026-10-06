@@ -59,12 +59,18 @@ export default function AdminLayout({
 
   const handleSavePassword = (e) => {
     e.preventDefault();
-    if (!adminUser.trim() || !adminPass.trim()) {
+    const cleanUser = adminUser.trim();
+    const cleanPass = adminPass.trim();
+    if (!cleanUser || !cleanPass) {
       alert('Tên đăng nhập và mật khẩu không được để trống!');
       return;
     }
-    storage.setAdminCredentials(adminUser.trim(), adminPass.trim());
-    showToast('Đã lưu thông tin tài khoản quản trị mới thành công!');
+    const success = storage.setAdminCredentials(cleanUser, cleanPass);
+    if (success) {
+      showToast(`Đã lưu tài khoản (${cleanUser}) & mật khẩu mới thành công!`);
+    } else {
+      showToast('Có lỗi xảy ra khi lưu thông tin quản trị!');
+    }
     setChangePassOpen(false);
   };
 
@@ -256,7 +262,12 @@ export default function AdminLayout({
               <ExternalLink size={14} />
               <span>Xem Website Shop</span>
             </button>
-            <button className="btn-gaming-outline btn-sm" onClick={() => setChangePassOpen(true)}>
+            <button className="btn-gaming-outline btn-sm" onClick={() => {
+              const currentCreds = storage.getAdminCredentials();
+              setAdminUser(currentCreds.username);
+              setAdminPass(currentCreds.password);
+              setChangePassOpen(true);
+            }}>
               <KeyRound size={14} />
               <span>Đổi Mật Khẩu</span>
             </button>

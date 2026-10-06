@@ -102,42 +102,60 @@ export default function App() {
   }, [isGrayscale]);
 
   // Tự chữa dung lượng localStorage khi mở trang
+  // Khởi tạo và khôi phục dữ liệu từ IndexedDB / Cloud khi mở trang (F5)
   useEffect(() => {
     let cancelled = false;
-    storage.ensureLocalStorageHealthy().then(async (changed) => {
-      if (cancelled || !changed) return;
 
-      const fresh = {
-        shopConfig: storage.getShopConfig(),
-        accounts: storage.getAccounts(),
-        banners: storage.getBanners(),
-        categories: storage.getCategories()
-      };
-      setShopConfig(fresh.shopConfig);
-      setAccounts(fresh.accounts);
-      setBanners(fresh.banners);
-      setCategories(fresh.categories);
+    const initDataOnLoad = async () => {
+      // 1. Phục hồi từ IndexedDB nếu localStorage bị thiếu
+      const restoredAccounts = await storage.restoreFromIndexedDb();
+      if (!cancelled && restoredAccounts) {
+        setAccounts(restoredAccounts);
+      }
 
-      await storage.persistDataToDisk(fresh);
-    });
-    return () => { cancelled = true; };
-  }, []);
+      // 2. Bảo đảm sức khỏe bộ nhớ
+      await storage.ensureLocalStorageHealthy();
 
-  // Load latest data from Cloud Database on startup & window focus
-  useEffect(() => {
-    const syncData = () => {
+      // 3. Tải từ Cloud Database
+      const cloudData = await storage.fetchFromCloud();
+      if (!cancelled && cloudData) {
+        if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
+        if (Array.isArray(cloudData.accounts) && cloudData.accounts.length > 0) {
+          setAccounts(cloudData.accounts);
+        }
+        if (Array.isArray(cloudData.banners) && cloudData.banners.length > 0) {
+          setBanners(cloudData.banners);
+        }
+        if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
+          setCategories(cloudData.categories);
+        }
+      }
+    };
+
+    initDataOnLoad();
+
+    const handleFocusSync = () => {
       storage.fetchFromCloud().then(cloudData => {
-        if (cloudData) {
+        if (!cancelled && cloudData) {
           if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
-          if (Array.isArray(cloudData.accounts)) setAccounts(cloudData.accounts);
-          if (Array.isArray(cloudData.banners)) setBanners(cloudData.banners);
-          if (Array.isArray(cloudData.categories)) setCategories(cloudData.categories);
+          if (Array.isArray(cloudData.accounts) && cloudData.accounts.length > 0) {
+            setAccounts(cloudData.accounts);
+          }
+          if (Array.isArray(cloudData.banners) && cloudData.banners.length > 0) {
+            setBanners(cloudData.banners);
+          }
+          if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
+            setCategories(cloudData.categories);
+          }
         }
       });
     };
-    syncData();
-    window.addEventListener('focus', syncData);
-    return () => window.removeEventListener('focus', syncData);
+
+    window.addEventListener('focus', handleFocusSync);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', handleFocusSync);
+    };
   }, []);
 
   // Parse exact route from hash
