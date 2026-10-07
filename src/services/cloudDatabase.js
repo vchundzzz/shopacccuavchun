@@ -128,6 +128,21 @@ export const cloudDatabase = {
     }
   },
 
+  // Get the latest updatedAt timestamp from Cloud Database (ultra-lightweight ~30 bytes)
+  async fetchUpdatedAt(rawUrl) {
+    const baseUrl = this.normalizeUrl(rawUrl) || DEFAULT_FIREBASE_URL;
+    if (!baseUrl) return null;
+    const url = `${baseUrl}/shopData/updatedAt.json?t=${Date.now()}`;
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return typeof data === 'string' ? data : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
   // Save all shop data to the Cloud Database
   async saveShopData(rawUrl, payload) {
     const baseUrl = this.normalizeUrl(rawUrl);
@@ -148,7 +163,7 @@ export const cloudDatabase = {
       });
 
       if (res.ok) {
-        return { success: true, message: 'Đã lưu và đồng bộ lên đám mây thành công!' };
+        return { success: true, updatedAt: enrichedPayload.updatedAt, message: 'Đã lưu và đồng bộ lên đám mây thành công!' };
       } else {
         const errText = await res.text();
         return { success: false, message: `Lỗi lưu đám mây (${res.status}): ${errText}` };

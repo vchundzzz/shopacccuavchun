@@ -16,7 +16,8 @@ import {
   ExternalLink,
   Bell,
   Save,
-  Cloud
+  Cloud,
+  Menu
 } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import AdminAccounts from './AdminAccounts';
@@ -46,6 +47,7 @@ export default function AdminLayout({
   onDismissSyncError
 }) {
   const [activeAdminTab, setActiveAdminTab] = useState('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [changePassOpen, setChangePassOpen] = useState(false);
   const [adminUser, setAdminUser] = useState(() => storage.getAdminCredentials().username);
@@ -136,8 +138,13 @@ export default function AdminLayout({
         </div>
       )}
 
+      {/* Backdrop for Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="admin-mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
+
       {/* Admin Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
           <div className="shop-logo admin-sidebar-logo-brand">
             <div className="admin-logo-img-container">
@@ -157,7 +164,7 @@ export default function AdminLayout({
         <nav className="admin-sidebar-nav">
           <button 
             className={`admin-nav-item ${activeAdminTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('dashboard')}
+            onClick={() => { setActiveAdminTab('dashboard'); setMobileMenuOpen(false); }}
           >
             <LayoutDashboard size={18} />
             <span>Tổng Quan (Dashboard)</span>
@@ -165,7 +172,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'accounts' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('accounts')}
+            onClick={() => { setActiveAdminTab('accounts'); setMobileMenuOpen(false); }}
           >
             <Users size={18} />
             <span>Quản Lý Tài Khoản</span>
@@ -174,7 +181,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'banners' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('banners')}
+            onClick={() => { setActiveAdminTab('banners'); setMobileMenuOpen(false); }}
           >
             <Image size={18} />
             <span>Quản Lý Banners</span>
@@ -183,7 +190,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'categories' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('categories')}
+            onClick={() => { setActiveAdminTab('categories'); setMobileMenuOpen(false); }}
           >
             <FolderTree size={18} />
             <span>Quản Lý Danh Mục</span>
@@ -192,7 +199,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'announcement' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('announcement')}
+            onClick={() => { setActiveAdminTab('announcement'); setMobileMenuOpen(false); }}
           >
             <Bell size={18} />
             <span>Quản Lý Thông Báo</span>
@@ -201,7 +208,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('settings')}
+            onClick={() => { setActiveAdminTab('settings'); setMobileMenuOpen(false); }}
           >
             <SettingsIcon size={18} />
             <span>Cấu Hình Shop & Logo</span>
@@ -209,7 +216,7 @@ export default function AdminLayout({
 
           <button 
             className={`admin-nav-item ${activeAdminTab === 'cloud' ? 'active' : ''}`}
-            onClick={() => setActiveAdminTab('cloud')}
+            onClick={() => { setActiveAdminTab('cloud'); setMobileMenuOpen(false); }}
           >
             <Cloud size={18} />
             <span>Database Đám Mây</span>
@@ -218,12 +225,12 @@ export default function AdminLayout({
         </nav>
 
         <div className="admin-sidebar-footer">
-          <button className="admin-reset-btn" onClick={handleResetData} title="Khôi phục lại dữ liệu mẫu">
+          <button className="admin-reset-btn" onClick={() => { handleResetData(); setMobileMenuOpen(false); }} title="Khôi phục lại dữ liệu mẫu">
             <RotateCcw size={15} />
             <span>Khôi Phục Dữ Liệu Gốc</span>
           </button>
 
-          <button className="admin-logout-btn" onClick={onExitAdmin} title="Quay lại giao diện cửa hàng">
+          <button className="admin-logout-btn" onClick={() => { onExitAdmin(); setMobileMenuOpen(false); }} title="Quay lại giao diện cửa hàng">
             <LogOut size={16} />
             <span>Xem Website Shop</span>
           </button>
@@ -234,18 +241,28 @@ export default function AdminLayout({
       <main className="admin-main">
         {/* Top Header */}
         <header className="admin-top-header">
-          <div className="admin-breadcrumb">
-            <span>Hệ Thống Quản Trị</span>
-            <span>/</span>
-            <strong>
-              {activeAdminTab === 'dashboard' && 'Dashboard Thống Kê'}
-              {activeAdminTab === 'accounts' && 'Quản Lý Kho Tài Khoản Game'}
-              {activeAdminTab === 'banners' && 'Quản Lý Banner Quảng Cáo Toàn Trang'}
-              {activeAdminTab === 'categories' && 'Quản Lý Danh Mục & Khoảng Giá'}
-              {activeAdminTab === 'announcement' && 'Quản Lý Thông Báo Popup Trang Chủ'}
-              {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Logo'}
-              {activeAdminTab === 'cloud' && 'Cấu Hình Cơ Sở Dữ Liệu Đám Mây (Cloud Database)'}
-            </strong>
+          <div className="admin-header-left">
+            <button 
+              className="admin-mobile-menu-btn" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              title="Menu Điều Hướng"
+              type="button"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="admin-breadcrumb">
+              <span>Hệ Thống Quản Trị</span>
+              <span>/</span>
+              <strong>
+                {activeAdminTab === 'dashboard' && 'Dashboard Thống Kê'}
+                {activeAdminTab === 'accounts' && 'Quản Lý Kho Tài Khoản Game'}
+                {activeAdminTab === 'banners' && 'Quản Lý Banner Quảng Cáo Toàn Trang'}
+                {activeAdminTab === 'categories' && 'Quản Lý Danh Mục & Khoảng Giá'}
+                {activeAdminTab === 'announcement' && 'Quản Lý Thông Báo Popup Trang Chủ'}
+                {activeAdminTab === 'settings' && 'Cấu Hình Shop, Thương Hiệu & Logo'}
+                {activeAdminTab === 'cloud' && 'Cấu Hình Cơ Sở Dữ Liệu Đám Mây (Cloud Database)'}
+              </strong>
+            </div>
           </div>
 
           <div className="admin-header-actions">
@@ -256,11 +273,11 @@ export default function AdminLayout({
               style={{ background: 'linear-gradient(135deg, #10b981, #059669)', borderColor: '#10b981' }}
             >
               <Save size={14} />
-              <span>Lưu Ra File Cho Bạn Bè</span>
+              <span>Lưu Ra File</span>
             </button>
             <button className="btn-gaming-success btn-sm" onClick={onExitAdmin} title="Mở trang chủ shop để xem các thay đổi">
               <ExternalLink size={14} />
-              <span>Xem Website Shop</span>
+              <span>Xem Shop</span>
             </button>
             <button className="btn-gaming-outline btn-sm" onClick={() => {
               const currentCreds = storage.getAdminCredentials();

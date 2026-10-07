@@ -28,6 +28,24 @@
   color: #cbd5e1;
 }
 
+@media (max-width: 768px) {
+  .admin-welcome-banner {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quick-add-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+  .quick-add-group button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Stats Grid */
 .dashboard-stats-grid {
   display: grid;

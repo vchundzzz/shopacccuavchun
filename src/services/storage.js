@@ -341,7 +341,8 @@ export const storage = {
     }
 
     if (cloudResult.success) {
-      writeMeta({ localUpdatedAt: Date.now(), lastCloudSyncAt: Date.now() });
+      const savedTime = cloudResult.updatedAt || new Date().toISOString();
+      writeMeta({ localUpdatedAt: Date.now(), lastCloudSyncAt: Date.now(), lastCloudUpdatedAt: savedTime });
     }
 
     return {
@@ -349,6 +350,28 @@ export const storage = {
       disk: diskResult,
       cloud: cloudResult
     };
+  },
+
+  // Kiểm tra siêu nhẹ timestamp của Cloud Database (~30 bytes) để biết có thay đổi không
+  async checkCloudUpdatedAt() {
+    try {
+      const currentConfig = this._pureGetShopConfig();
+      const cloudUrl = cloudDatabase.getCloudUrl(currentConfig);
+      if (!cloudUrl) return null;
+      return await cloudDatabase.fetchUpdatedAt(cloudUrl);
+    } catch (e) {
+      return null;
+    }
+  },
+
+  getLastCloudUpdatedAt() {
+    return readMeta().lastCloudUpdatedAt || null;
+  },
+
+  setLastCloudUpdatedAt(timeStr) {
+    if (timeStr) {
+      writeMeta({ lastCloudUpdatedAt: timeStr });
+    }
   },
 
   // Fetch the latest data from Cloud Database on page load
@@ -398,37 +421,10 @@ export const storage = {
     }
     if (Array.isArray(cloudData.accounts)) {
       const currentAccounts = this.getAccounts();
-      const accountMap = new Map();
-
-      // 1. Giữ nguyên toàn bộ tài khoản cục bộ
-      currentAccounts.forEach(acc => {
-        const key = (acc.code || acc.id || '').toString().trim().toUpperCase();
-        if (key) accountMap.set(key, acc);
-      });
-
-      // 2. Hợp nhất tài khoản từ Cloud (không xóa mất tài khoản máy này đang có)
-      cloudData.accounts.forEach(acc => {
-        const key = (acc.code || acc.id || '').toString().trim().toUpperCase();
-        if (!key) return;
-        if (!accountMap.has(key)) {
-          accountMap.set(key, acc);
-        } else {
-          const localAcc = accountMap.get(key);
-          const cloudTime = new Date(acc.updatedAt || acc.createdAt || 0).getTime();
-          const localTime = new Date(localAcc.updatedAt || localAcc.createdAt || 0).getTime();
-          if (cloudTime > localTime) {
-            accountMap.set(key, acc);
-          }
-        }
-      });
-
-      const mergedAccounts = Array.from(accountMap.values());
-      await this._writeLocal(STORAGE_KEYS.ACCOUNTS, mergedAccounts);
-      cloudData.accounts = mergedAccounts;
-
-      // Nếu máy này có nhiều acc hơn Cloud (do vừa thêm tài khoản), đồng bộ ngay lên Cloud
-      if (currentAccounts.length > cloudData.accounts.length) {
-        this.persistDataToDisk({ accounts: mergedAccounts }).catch(() => {});
+      if (cloudData.accounts.length > 0 || currentAccounts.length === 0) {
+        await this._writeLocal(STORAGE_KEYS.ACCOUNTS, cloudData.accounts);
+      } else {
+        console.warn('[storage] Bỏ qua danh sách accounts rỗng từ cloud để bảo vệ tài khoản cục bộ.');
       }
     }
     if (Array.isArray(cloudData.banners)) {
@@ -439,7 +435,7 @@ export const storage = {
     }
 
     const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : Date.now();
-    writeMeta({ localUpdatedAt: cloudTime, lastCloudSyncAt: Date.now() });
+    writeMeta({ localUpdatedAt: cloudTime, lastCloudSyncAt: Date.now(), lastCloudUpdatedAt: cloudData.updatedAt || null });
 
     return cloudData;
   },
@@ -545,10 +541,6 @@ export const storage = {
   },
 
   async saveAccounts(accounts) {
-    // 1. Lưu tức thì danh sách vào IndexedDB & localStorage để bảo toàn dữ liệu ngay
-    await this._writeLocal(STORAGE_KEYS.ACCOUNTS, accounts);
-    markLocalUpdated();
-
     let sanitizedAccounts = accounts;
     try {
       const cfg = this.getShopConfig();

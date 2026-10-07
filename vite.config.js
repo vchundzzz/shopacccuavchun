@@ -87,6 +87,7 @@ function autoSaveShopDataPlugin() {
 export default defineConfig({
   plugins: [react(), autoSaveShopDataPlugin()],
   server: {
+    host: true,
     watch: {
       ignored: ['**/src/data/db.json']
     }

@@ -150,9 +150,10 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
       gallery: finalGallery
     };
 
+    const now = new Date().toISOString();
     if (editingAccount) {
       const updated = accounts.map(a => 
-        (a.id === editingAccount.id || a.code === editingAccount.code) ? { ...accountData, id: a.id } : a
+        (a.id === editingAccount.id || a.code === editingAccount.code) ? { ...accountData, id: a.id, updatedAt: now } : a
       );
       onUpdateAccounts(updated);
       showToast(`Đã cập nhật thành công tài khoản ${formData.code}!`);
@@ -161,7 +162,8 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
         ...accountData,
         id: formData.code,
         views: 0,
-        createdAt: new Date().toISOString()
+        createdAt: now,
+        updatedAt: now
       };
       onUpdateAccounts([newAcc, ...accounts]);
       showToast(`Đã thêm mới tài khoản ${newAcc.code}!`);
@@ -177,8 +179,9 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
   // Toggle Sold Status
   const handleToggleSold = (acc) => {
     const nextStatus = acc.status === 'sold' ? 'available' : 'sold';
+    const now = new Date().toISOString();
     const updated = accounts.map(a => 
-      (a.id === acc.id) ? { ...a, status: nextStatus } : a
+      (a.id === acc.id) ? { ...a, status: nextStatus, updatedAt: now } : a
     );
     onUpdateAccounts(updated);
     showToast(`Đã chuyển trạng thái acc ${acc.code || acc.id} sang "${nextStatus === 'sold' ? 'Đã bán' : 'Còn hàng'}"`);
@@ -187,8 +190,9 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
   // Toggle Hidden Status
   const handleToggleHidden = (acc) => {
     const nextHidden = !acc.hidden;
+    const now = new Date().toISOString();
     const updated = accounts.map(a => 
-      (a.id === acc.id) ? { ...a, hidden: nextHidden } : a
+      (a.id === acc.id) ? { ...a, hidden: nextHidden, updatedAt: now } : a
     );
     onUpdateAccounts(updated);
     showToast(`Đã ${nextHidden ? 'ẩn' : 'hiện'} tài khoản ${acc.code || acc.id}`);
@@ -225,8 +229,9 @@ export default function AdminAccounts({ accounts, categories, onUpdateAccounts, 
       alert('Vui lòng nhập mức giá hợp lệ!');
       return;
     }
+    const now = new Date().toISOString();
     const updated = accounts.map(a => 
-      (a.id === quickPriceAccount.id) ? { ...a, price: num } : a
+      (a.id === quickPriceAccount.id) ? { ...a, price: num, updatedAt: now } : a
     );
     onUpdateAccounts(updated);
     showToast(`Đã đổi giá ${quickPriceAccount.code} thành ${formatVND(num)}`);

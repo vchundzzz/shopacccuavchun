@@ -101,10 +101,49 @@ export default function App() {
     }
   }, [isGrayscale]);
 
-  // Tự chữa dung lượng localStorage khi mở trang
-  // Khởi tạo và khôi phục dữ liệu từ IndexedDB / Cloud khi mở trang (F5)
+  // Hệ thống đồng bộ thời gian thực đa thiết bị (PC, Điện thoại, Máy tính bảng)
   useEffect(() => {
     let cancelled = false;
+    let isSyncing = false;
+    let knownCloudTime = storage.getLastCloudUpdatedAt();
+
+    const doSync = async (force = false) => {
+      if (isSyncing || cancelled) return;
+      isSyncing = true;
+      try {
+        if (!force) {
+          const remoteTime = await storage.checkCloudUpdatedAt();
+          if (!remoteTime || remoteTime === knownCloudTime) {
+            isSyncing = false;
+            return;
+          }
+        }
+
+        const cloudData = await storage.fetchFromCloud();
+        if (cancelled || !cloudData) {
+          isSyncing = false;
+          return;
+        }
+
+        knownCloudTime = cloudData.updatedAt || new Date().toISOString();
+        storage.setLastCloudUpdatedAt(knownCloudTime);
+
+        if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
+        if (Array.isArray(cloudData.accounts)) {
+          setAccounts(cloudData.accounts);
+        }
+        if (Array.isArray(cloudData.banners) && cloudData.banners.length > 0) {
+          setBanners(cloudData.banners);
+        }
+        if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
+          setCategories(cloudData.categories);
+        }
+      } catch (err) {
+        console.warn('[RealtimeSync] Lỗi đồng bộ đám mây:', err);
+      } finally {
+        isSyncing = false;
+      }
+    };
 
     const initDataOnLoad = async () => {
       // 1. Phục hồi từ IndexedDB nếu localStorage bị thiếu
@@ -116,26 +155,32 @@ export default function App() {
       // 2. Bảo đảm sức khỏe bộ nhớ
       await storage.ensureLocalStorageHealthy();
 
-      // 3. Tải từ Cloud Database
-      const cloudData = await storage.fetchFromCloud();
-      if (!cancelled && cloudData) {
-        if (cloudData.shopConfig) setShopConfig(cloudData.shopConfig);
-        if (Array.isArray(cloudData.accounts) && cloudData.accounts.length > 0) {
-          setAccounts(cloudData.accounts);
-        }
-        if (Array.isArray(cloudData.banners) && cloudData.banners.length > 0) {
-          setBanners(cloudData.banners);
-        }
-        if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
-          setCategories(cloudData.categories);
-        }
-      }
+      // 3. Tải từ Cloud Database ban đầu
+      await doSync(true);
     };
 
     initDataOnLoad();
 
+    // 4. Kiểm tra siêu nhẹ định kỳ mỗi 3.5 giây để đồng bộ tức thì khi bất kỳ thiết bị nào thêm/sửa acc
+    const timerId = setInterval(() => {
+      doSync(false);
+    }, 3500);
+
+    // 5. Kiểm tra ngay lập tức khi mở khóa màn hình điện thoại hoặc quay lại tab trình duyệt
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        doSync(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
     return () => {
       cancelled = true;
+      clearInterval(timerId);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
     };
   }, []);
 
